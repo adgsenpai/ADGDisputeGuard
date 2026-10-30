@@ -49,7 +49,7 @@ with tests, all tests green, and the LaTeX report regenerated.
 - [x] **Ollama-backed bounded investigation**: an investigation service that drives the bounded loop using a local Ollama model for the structured proposal/summary steps, with the allowlist, read-only tools, and budget enforced in app code (not the prompt). Graceful fallback when Ollama is unreachable. Tests for the bounds/allowlist with the model mocked.
 - [x] **App UI**: pages to view transactions, open a dispute, see its lifecycle/audit trail and advisory risk, and run an investigation — wired to the API routes.
 - [x] **Infrastructure**: `infra/docker-compose.yml` with the web app + an Ollama service, a web `Dockerfile`, `.env.example`, a model pull/bootstrap script, and README docs for running it.
-- [ ] **Phase 2 report/docs**: update README and (if useful) the LaTeX report to describe the app + infra; confirm `npm test` and `./run-tests.sh` are both green.
+- [x] **Phase 2 report/docs**: update README and (if useful) the LaTeX report to describe the app + infra; confirm `npm test` and `./run-tests.sh` are both green.
 
 ## State
 

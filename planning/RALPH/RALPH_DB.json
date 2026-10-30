@@ -4,7 +4,7 @@
   "source_of_truth": "planning/Software Spec/equations.tex",
   "phases": {
     "phase1_engine": "done",
-    "phase2_app": "in_progress"
+    "phase2_app": "done"
   },
   "items": [
     { "id": "scaffold", "status": "done", "commit": "19e806a" },
@@ -20,8 +20,8 @@
     { "id": "dispute-api-routes", "status": "done", "commit": "dbd8eac" },
     { "id": "ollama-investigation", "status": "done", "commit": "48b124d" },
     { "id": "app-ui", "status": "done", "commit": "89a118d" },
-    { "id": "infra-docker-ollama", "status": "done" },
-    { "id": "phase2-report-docs", "status": "todo" }
+    { "id": "infra-docker-ollama", "status": "done", "commit": "2a37930" },
+    { "id": "phase2-report-docs", "status": "done" }
   ],
   "iterations": []
 }

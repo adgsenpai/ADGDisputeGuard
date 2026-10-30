@@ -28,4 +28,5 @@ commit. Newest at the bottom.
 | 10 | Dispute API routes | +6 API tests (19 total), tsc clean | `dbd8eac` |
 | 11 | Ollama-backed bounded investigation | +6 tests, model mocked (25 total) | `48b124d` |
 | 12 | App UI (console) | next build passes, tsc clean | `89a118d` |
-| 13 | Infrastructure (docker-compose + Ollama) | | |
+| 13 | Infrastructure (docker-compose + Ollama) | next build + npm test green, YAML valid | `2a37930` |
+| 14 | Phase 2 report/docs | | |
