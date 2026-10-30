@@ -21,7 +21,7 @@
     { "id": "ollama-investigation", "status": "done", "commit": "48b124d" },
     { "id": "app-ui", "status": "done", "commit": "89a118d" },
     { "id": "infra-docker-ollama", "status": "done", "commit": "2a37930" },
-    { "id": "phase2-report-docs", "status": "done" }
+    { "id": "phase2-report-docs", "status": "done", "commit": "4741462" }
   ],
   "iterations": []
 }
