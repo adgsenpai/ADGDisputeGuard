@@ -10,6 +10,7 @@
 pub mod access;
 pub mod evidence;
 pub mod investigation;
+pub mod jobs;
 pub mod lifecycle;
 pub mod money;
 pub mod risk;
