@@ -5,3 +5,18 @@ out/
 *.tsbuildinfo
 .env*
 !.env.example
+
+# Rust
+target/
+**/target/
+Cargo.lock
+
+# LaTeX intermediates (report PDF/source are kept)
+*.aux
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+engine/report/*.log
+engine/report/*.out
+engine/report/*.toc
+engine/report/build*.log

@@ -1,0 +1,16 @@
+[package]
+name = "disputeguard-engine"
+version = "0.1.0"
+edition = "2021"
+description = "Reference implementation and property/unit tests for the DisputeGuard equations and flows"
+license = "MIT"
+publish = false
+
+[[bin]]
+name = "report"
+path = "src/bin/report.rs"
+
+[dependencies]
+
+[profile.test]
+opt-level = 0

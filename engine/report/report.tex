@@ -1,0 +1,204 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{microtype}
+
+\definecolor{ADGBlue}{RGB}{19,67,115}
+\definecolor{ADGDark}{RGB}{22,29,38}
+\definecolor{PassGreen}{RGB}{20,110,60}
+\definecolor{FailRed}{RGB}{170,30,30}
+\definecolor{RowTint}{RGB}{245,247,249}
+
+\hypersetup{colorlinks=true,linkcolor=ADGBlue,urlcolor=ADGBlue,
+  pdftitle={DisputeGuard Engine Test Report},pdfauthor={ADGSTUDIOS}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textbf{ADGSTUDIOS}}
+\rhead{DisputeGuard Engine Test Report}
+\cfoot{\thepage}
+\setlength{\headheight}{14pt}
+
+\newcommand{\pass}{\textcolor{PassGreen}{\textbf{PASS}}}
+\newcommand{\fail}{\textcolor{FailRed}{\textbf{FAIL}}}
+
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+  {\Huge\bfseries ADGSTUDIOS\par}
+  \vspace{0.4cm}
+  {\LARGE\color{ADGBlue}\bfseries DisputeGuard\par}
+  \vspace{1.3cm}
+  \rule{0.85\textwidth}{0.8pt}
+  \vspace{0.8cm}
+  {\Large\bfseries Engine Test Report\par}
+  \vspace{0.4cm}
+  {\large Automated verification of the equations and flows\par}
+  \vfill
+  {\Large \pass\quad 34 / 34 checks passed\par}
+  \vspace{0.6cm}
+  {\large Generated October 2026 \quad|\quad Rust reference engine\par}
+  \vfill
+  \textit{Companion to the DisputeGuard Equations and Algorithms guide.}
+\end{titlepage}
+
+\section*{Summary}
+\begin{center}
+\begin{tabular}{@{}lr@{}}
+\toprule
+Metric & Value \\
+\midrule
+Total checks & 34 \\
+Passed & \textcolor{PassGreen}{34} \\
+Failed & \textcolor{FailRed}{0} \\
+Sections & 7 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent This report is produced by the \texttt{report} binary in the \texttt{disputeguard-engine} crate. Each row runs a deterministic check against the reference implementation and records the observed value.\par
+\vspace{0.5em}
+
+\section*{Money and Exact Amounts \hfill \normalsize\textcolor{ADGBlue}{5/5}}
+\noindent Amounts are whole minor units; precision follows the currency and floating-point rounding never appears.\par\vspace{0.4em}
+\renewcommand{\arraystretch}{1.25}
+\begin{longtable}{@{}p{0.40\textwidth}p{0.45\textwidth}r@{}}
+\toprule
+\textbf{Check} & \textbf{Observed} & \textbf{Result} \\
+\midrule
+\endhead
+R1234.56 parses to cents & \texttt{\small minor = 123456} & \pass \\
+0.10 + 0.20 is exact & \texttt{\small minor = 30 (= 0.30)} & \pass \\
+JPY rejects fractional input & \texttt{\small parse("1.5", JPY) = BadPrecision} & \pass \\
+BHD keeps three decimals & \texttt{\small minor = 1234} & \pass \\
+Cross-currency add is refused & \texttt{\small ZAR + USD = CurrencyMismatch} & \pass \\
+\bottomrule
+\end{longtable}
+
+\section*{Ownership and Permission \hfill \normalsize\textcolor{ADGBlue}{4/4}}
+\noindent View depends on ownership or an analyst/admin role; dispute creation always requires ownership.\par\vspace{0.4em}
+\renewcommand{\arraystretch}{1.25}
+\begin{longtable}{@{}p{0.40\textwidth}p{0.45\textwidth}r@{}}
+\toprule
+\textbf{Check} & \textbf{Observed} & \textbf{Result} \\
+\midrule
+\endhead
+Owner can view & \texttt{\small CanView(owner, t) = true} & \pass \\
+Stranger cannot view & \texttt{\small CanView(stranger, t) = false} & \pass \\
+Analyst can view & \texttt{\small role grants CanView} & \pass \\
+Only owner can create & \texttt{\small analyst cannot create a dispute} & \pass \\
+\bottomrule
+\end{longtable}
+
+\section*{Dispute Lifecycle and Concurrency \hfill \normalsize\textcolor{ADGBlue}{4/4}}
+\noindent Only authorised transitions proceed; stale versions are rejected and successful changes bump the version.\par\vspace{0.4em}
+\renewcommand{\arraystretch}{1.25}
+\begin{longtable}{@{}p{0.40\textwidth}p{0.45\textwidth}r@{}}
+\toprule
+\textbf{Check} & \textbf{Observed} & \textbf{Result} \\
+\midrule
+\endhead
+SUBMITTED + BEGIN\_REVIEW -\textgreater{} UNDER\_REVIEW & \texttt{\small authorised transition} & \pass \\
+SUBMITTED + ISSUE\_REFUND -\textgreater{} bottom & \texttt{\small refund is never a lifecycle transition} & \pass \\
+Version bumps on success & \texttt{\small v 3 -\textgreater{} 4} & \pass \\
+Stale version is rejected & \texttt{\small expected 2 != actual 3} & \pass \\
+\bottomrule
+\end{longtable}
+
+\section*{Dispute Creation: Idempotency and Uniqueness \hfill \normalsize\textcolor{ADGBlue}{4/4}}
+\noindent Retries return the original result; at most one active dispute may exist per transaction.\par\vspace{0.4em}
+\renewcommand{\arraystretch}{1.25}
+\begin{longtable}{@{}p{0.40\textwidth}p{0.45\textwidth}r@{}}
+\toprule
+\textbf{Check} & \textbf{Observed} & \textbf{Result} \\
+\midrule
+\endhead
+Retry replays original dispute & \texttt{\small ids 1 == 1, replayed = true} & \pass \\
+Key reuse with new body refused & \texttt{\small KeyReuseWithDifferentRequest} & \pass \\
+Second active dispute refused & \texttt{\small ActiveDisputeExists} & \pass \\
+Active count is 1 & \texttt{\small count = 1} & \pass \\
+\bottomrule
+\end{longtable}
+
+\section*{Deterministic Risk Indicators \hfill \normalsize\textcolor{ADGBlue}{12/12}}
+\noindent Each signal has its own safe guards; a missing input is reported as unavailable rather than treated as low risk.\par\vspace{0.4em}
+\renewcommand{\arraystretch}{1.25}
+\begin{longtable}{@{}p{0.40\textwidth}p{0.45\textwidth}r@{}}
+\toprule
+\textbf{Check} & \textbf{Observed} & \textbf{Result} \\
+\midrule
+\endhead
+Amount signal bounded in [0,1] & \texttt{\small A(9000; x\_max=10000) = 0.9886} & \pass \\
+Amount signal clamps at scale & \texttt{\small A(1e6; x\_max=10000) = 1.0000} & \pass \\
+z-score flags R900 outlier & \texttt{\small z = 46.378 (\textgreater{} 3)} & \pass \\
+z-score unavailable at zero variance & \texttt{\small constant history -\textgreater{} None} & \pass \\
+Robust z (MAD) flags outlier & \texttt{\small z* = 45.023} & \pass \\
+MAD = 0 is undefined (no div-by-zero) & \texttt{\small constant history -\textgreater{} None} & \pass \\
+Velocity needs positive window & \texttt{\small V(12, 0) = None} & \pass \\
+Haversine JHB-\textgreater{}CPT \textasciitilde{} 1262 km & \texttt{\small d = 1261.6 km} & \pass \\
+Impossible travel velocity detected & \texttt{\small v\_required = 1262 km/h over 1 h} & \pass \\
+Combined score in [0,1] & \texttt{\small R = 0.440} & \pass \\
+Missing signal refuses a score & \texttt{\small geography = None -\textgreater{} MissingSignal} & \pass \\
+Weights must sum to 1 & \texttt{\small sum = 1.3 -\textgreater{} InvalidWeights} & \pass \\
+\bottomrule
+\end{longtable}
+
+\section*{Bounded AI Investigation \hfill \normalsize\textcolor{ADGBlue}{3/3}}
+\noindent The loop gathers only allowlisted, read-only observations and stops on budget or a disallowed tool, leaving the case unchanged.\par\vspace{0.4em}
+\renewcommand{\arraystretch}{1.25}
+\begin{longtable}{@{}p{0.40\textwidth}p{0.45\textwidth}r@{}}
+\toprule
+\textbf{Check} & \textbf{Observed} & \textbf{Result} \\
+\midrule
+\endhead
+Complete run reaches human review & \texttt{\small stage = Review, tool\_calls = 3} & \pass \\
+Budget stops before 3rd tool call & \texttt{\small stage = Stopped, tool\_calls = 2} & \pass \\
+Disallowed tool blocked pre-execution & \texttt{\small tool\_calls = 1, observations = 1} & \pass \\
+\bottomrule
+\end{longtable}
+
+\section*{Sample Transaction Data \hfill \normalsize\textcolor{ADGBlue}{2/2}}
+\noindent The demo transactions shared with the web landing page use unique references and exact positive minor units.\par\vspace{0.4em}
+\renewcommand{\arraystretch}{1.25}
+\begin{longtable}{@{}p{0.40\textwidth}p{0.45\textwidth}r@{}}
+\toprule
+\textbf{Check} & \textbf{Observed} & \textbf{Result} \\
+\midrule
+\endhead
+References are unique & \texttt{\small 9 transactions, 9 unique ids} & \pass \\
+All amounts positive minor units & \texttt{\small every amount\_minor \textgreater{} 0} & \pass \\
+\bottomrule
+\end{longtable}
+
+\section*{Appendix: Sample Transactions}
+\noindent The nine demo transactions used as fixtures (amounts shown as exact ZAR from integer cents).\par\vspace{0.4em}
+\renewcommand{\arraystretch}{1.2}
+\begin{longtable}{@{}lllr@{}}
+\toprule
+\textbf{Ref} & \textbf{Merchant} & \textbf{Category} & \textbf{Amount (ZAR)} \\
+\midrule
+\endhead
+TX-0042 & Atlas Online & Shopping & 1249.00 \\
+TX-0043 & Corner Coffee & Food \& drink & 68.00 \\
+TX-0044 & Fresh Market & Groceries & 432.50 \\
+TX-0051 & Studio Supply & Shopping & 899.00 \\
+TX-0052 & Stream House & Subscription & 149.00 \\
+TX-0053 & Cloud Desk & Software & 229.00 \\
+TX-0061 & Coastline Stay & Accommodation & 2450.00 \\
+TX-0062 & City Shuttle & Transport & 185.00 \\
+TX-0063 & Platform Café & Food \& drink & 96.00 \\
+\bottomrule
+\end{longtable}
+
+\vfill
+\noindent\textit{All figures are illustrative. Risk indicators are advisory and never decide a dispute.}
+
+\end{document}
