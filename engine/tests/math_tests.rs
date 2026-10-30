@@ -198,6 +198,20 @@ fn history_signal_maps_outlier_to_saturated_value() {
 }
 
 #[test]
+fn velocity_zscore_compares_against_history() {
+    // Customer normally does ~2/hr (sigma 0.5); a burst of 5/hr is unusual.
+    let z = velocity_zscore(2.0, 0.5, 5.0).unwrap();
+    assert!((z - 6.0).abs() < EPS);
+    let signal = velocity_signal(2.0, 0.5, 5.0, 3.0).unwrap();
+    assert_eq!(signal, 1.0); // z = 6 >> 3 -> saturates
+    let calm = velocity_signal(2.0, 0.5, 2.2, 3.0).unwrap();
+    assert!(calm < 0.2);
+    // Zero/degenerate deviation is unavailable, not zero.
+    assert!(velocity_zscore(2.0, 0.0, 5.0).is_none());
+    assert!(velocity_zscore(2.0, f64::NAN, 5.0).is_none());
+}
+
+#[test]
 fn geography_signal_from_required_velocity() {
     let dist = haversine_km(JOHANNESBURG.0, JOHANNESBURG.1, CAPE_TOWN.0, CAPE_TOWN.1);
     // ~1262 km in 1 hour against a 900 km/h feasible max -> saturates to 1.

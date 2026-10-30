@@ -147,6 +147,21 @@ pub fn velocity(count: u64, window: f64) -> Option<f64> {
     Some(count as f64 / window)
 }
 
+/// Velocity z-score `z_V = (V - mu) / sigma`, comparing current transaction
+/// velocity with the customer's historical velocity. Requires `sigma > 0`;
+/// returns `None` when history is insufficient (no invented score).
+pub fn velocity_zscore(mu: f64, sigma: f64, current: f64) -> Option<f64> {
+    if ![mu, sigma, current].iter().all(|v| v.is_finite()) || sigma <= 0.0 {
+        return None;
+    }
+    Some((current - mu) / sigma)
+}
+
+/// Velocity anomaly as a bounded `[0,1]` signal, via the velocity z-score.
+pub fn velocity_signal(mu: f64, sigma: f64, current: f64, z_max: f64) -> Option<f64> {
+    zscore_to_signal(velocity_zscore(mu, sigma, current)?, z_max)
+}
+
 /// Haversine great-circle distance in kilometres between two points given in
 /// degrees. Returns `None` if any coordinate is non-finite.
 pub fn haversine_km(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> Option<f64> {
