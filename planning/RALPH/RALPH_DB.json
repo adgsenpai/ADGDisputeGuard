@@ -16,7 +16,7 @@
     { "id": "background-retries", "status": "done", "commit": "ec1777c" },
     { "id": "risk-integration", "status": "done", "commit": "fe9a5d3" },
     { "id": "report-coverage", "status": "done", "commit": "d7ac5a4" },
-    { "id": "app-domain-core", "status": "todo" },
+    { "id": "app-domain-core", "status": "done" },
     { "id": "dispute-api-routes", "status": "todo" },
     { "id": "ollama-investigation", "status": "todo" },
     { "id": "app-ui", "status": "todo" },
