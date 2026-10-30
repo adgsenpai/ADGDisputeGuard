@@ -24,4 +24,5 @@ commit. Newest at the bottom.
 
 | # | Item | Verification | Commit |
 |---|------|--------------|--------|
-| _pending_ | see backlog in RALPH_LOOP.md | | |
+| 9 | App domain core (TS port) | +8 node:test (13 total) | `850acc6` |
+| 10 | Dispute API routes | | |

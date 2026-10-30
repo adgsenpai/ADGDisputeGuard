@@ -45,7 +45,7 @@ with tests, all tests green, and the LaTeX report regenerated.
 ### Phase 2 — Next.js application + Ollama + infrastructure
 
 - [x] **App domain core (TS port + tests)**: port the engine's money, access, lifecycle, risk and investigation logic to `apps/web/lib/domain/` as typed TS, with a `node:test` suite (`npm test`). This is the app's source of truth for the flows.
-- [ ] **Dispute API routes**: Next.js route handlers under `apps/web/app/api/` for create dispute (idempotent, ownership, one-active guard), list/get, lifecycle transition (role-gated, version-checked), and evidence intake validation — backed by the domain core and an in-memory store. Tests for the handlers' logic.
+- [x] **Dispute API routes**: Next.js route handlers under `apps/web/app/api/` for create dispute (idempotent, ownership, one-active guard), list/get, lifecycle transition (role-gated, version-checked), and evidence intake validation — backed by the domain core and an in-memory store. Tests for the handlers' logic.
 - [ ] **Ollama-backed bounded investigation**: an investigation service that drives the bounded loop using a local Ollama model for the structured proposal/summary steps, with the allowlist, read-only tools, and budget enforced in app code (not the prompt). Graceful fallback when Ollama is unreachable. Tests for the bounds/allowlist with the model mocked.
 - [ ] **App UI**: pages to view transactions, open a dispute, see its lifecycle/audit trail and advisory risk, and run an investigation — wired to the API routes.
 - [ ] **Infrastructure**: `infra/docker-compose.yml` with the web app + an Ollama service, a web `Dockerfile`, `.env.example`, a model pull/bootstrap script, and README docs for running it.
