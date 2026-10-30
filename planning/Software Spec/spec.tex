@@ -50,6 +50,7 @@
 
 \hypersetup{
     colorlinks=true,
+    hypertexnames=false,
     linkcolor=ADGBlue,
     urlcolor=ADGBlue,
     citecolor=ADGBlue,
@@ -602,17 +603,13 @@ Let the state space be:
 
 \[
 S =
-\{
-SUBMITTED,
-UNDER\_REVIEW,
-EVIDENCE\_REQUIRED,
-EVIDENCE\_RECEIVED,
-INVESTIGATING,
-APPROVED,
-REJECTED,
-REFUND\_PENDING,
-RESOLVED
-\}.
+\left\{
+\begin{array}{l}
+\texttt{SUBMITTED},\ \texttt{UNDER\_REVIEW},\ \texttt{EVIDENCE\_REQUIRED},\\
+\texttt{EVIDENCE\_RECEIVED},\ \texttt{INVESTIGATING},\ \texttt{APPROVED},\\
+\texttt{REJECTED},\ \texttt{REFUND\_PENDING},\ \texttt{RESOLVED}
+\end{array}
+\right\}.
 \]
 
 Let:
@@ -779,11 +776,13 @@ For example:
 \[
 P(CUSTOMER)
 =
-\{
-VIEW\_OWN\_TRANSACTION,
-CREATE\_OWN\_DISPUTE,
-VIEW\_OWN\_DISPUTE
-\}.
+\left\{
+\begin{array}{l}
+\texttt{VIEW\_OWN\_TRANSACTION},\\
+\texttt{CREATE\_OWN\_DISPUTE},\\
+\texttt{VIEW\_OWN\_DISPUTE}
+\end{array}
+\right\}.
 \]
 
 \[
@@ -791,12 +790,12 @@ P(ANALYST)
 =
 P(CUSTOMER)
 \cup
-\{
-VIEW\_CASE,
-REVIEW\_CASE,
-REQUEST\_EVIDENCE,
-TRANSITION\_CASE
-\}.
+\left\{
+\begin{array}{l}
+\texttt{VIEW\_CASE},\ \texttt{REVIEW\_CASE},\\
+\texttt{REQUEST\_EVIDENCE},\ \texttt{TRANSITION\_CASE}
+\end{array}
+\right\}.
 \]
 
 Administrative privileges shall not implicitly be exposed through

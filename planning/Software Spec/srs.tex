@@ -1,0 +1,441 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{microtype}
+
+\definecolor{ADGBlue}{RGB}{19,67,115}
+\definecolor{ADGDark}{RGB}{22,29,38}
+\definecolor{ADGLight}{RGB}{239,244,249}
+
+\hypersetup{
+    colorlinks=true,
+    hypertexnames=false,
+    linkcolor=ADGBlue,
+    urlcolor=ADGBlue,
+    pdftitle={ADGSTUDIOS DisputeGuard Software Requirements Specification},
+    pdfauthor={ADGSTUDIOS}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textbf{ADGSTUDIOS}}
+\rhead{DisputeGuard SRS}
+\cfoot{\thepage}
+\setlength{\headheight}{14pt}
+\setlist[itemize]{leftmargin=1.5em}
+\setlist[enumerate]{leftmargin=1.8em}
+
+\newcommand{\req}[3]{%
+    \par\noindent\textbf{\color{ADGBlue}#1}\quad
+    \textbf{(#3)}\enspace #2\par\smallskip
+}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    {\Huge\bfseries ADGSTUDIOS\par}
+    \vspace{0.5cm}
+    {\LARGE\color{ADGBlue}\bfseries DisputeGuard\par}
+    \vspace{1.5cm}
+    \rule{0.85\textwidth}{0.8pt}
+    \vspace{1cm}
+    {\Large\bfseries Software Requirements Specification\par}
+    \vspace{0.5cm}
+    {\large Version 1.0\par}
+    \vfill
+    \begin{tabular}{@{}ll@{}}
+        \textbf{System:} & ADGSTUDIOS DisputeGuard \\
+        \textbf{Document:} & Software Requirements Specification (SRS) \\
+        \textbf{Status:} & Baseline for implementation planning \\
+        \textbf{Date:} & October 2026 \\
+    \end{tabular}
+    \vfill
+    \textit{A testable description of the system's externally observable
+    behaviour, constraints and acceptance conditions.}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+\subsection{Purpose}
+
+This Software Requirements Specification defines the required
+behaviour, external interfaces, quality attributes and acceptance
+conditions for ADGSTUDIOS DisputeGuard. It is intended for product
+stakeholders, implementers, testers and reviewers.
+
+This document is a requirements baseline, not a claim that the system
+has already been implemented, independently certified, or approved for
+use in a live financial institution. Production deployment requires
+separate operational, legal, regulatory and business approval.
+
+\subsection{Conventions}
+
+Each normative requirement has a unique identifier. The term
+\textbf{shall} denotes a mandatory requirement. \textbf{Should}
+denotes a recommendation rather than an acceptance condition. Each
+requirement includes a verification method: \textbf{Test},
+\textbf{Inspection}, or \textbf{Analysis}.
+
+Requirements are phrased to be independently verifiable. Values that
+the current product definition does not establish are marked
+\textbf{TBD}; implementation must not silently treat an example value
+as approved business policy.
+
+\subsection{System Scope}
+
+DisputeGuard is a demonstration-oriented card transaction dispute
+management system. It supports a customer-facing workflow for viewing
+mock transactions, creating disputes and following their progress, and
+an analyst workflow for reviewing cases, evidence and deterministic
+signals.
+
+PostgreSQL is the authoritative store for case data. Redis may support
+caching, rate limiting and asynchronous coordination but is not the
+source of truth. Optional local AI assistance may classify, summarise
+and recommend investigation steps. An authorised human retains
+responsibility for final case decisions.
+
+The current scope does not include direct card-network connectivity,
+real settlement or money movement, a production identity provider, or
+an approved regulatory process unless those are separately specified.
+
+\subsection{Terms}
+
+\begin{longtable}{@{}p{0.23\textwidth}p{0.69\textwidth}@{}}
+\textbf{Term} & \textbf{Meaning} \\
+\hline
+Customer & Authenticated user who may access their own transactions and disputes. \\
+Analyst & Authorised user who reviews disputes and performs permitted case actions. \\
+Administrator & Authorised user who manages approved system configuration and access. \\
+Dispute & A case raised about a transaction and processed through a defined lifecycle. \\
+Evidence & A customer-provided file or other supporting material attached to a dispute. \\
+Active dispute & A dispute whose state belongs to the configured active-state set. \\
+Risk signal & A deterministic indicator intended to support analyst triage, not decide a case. \\
+AI analysis & Optional model-generated assistance subject to application validation and limits. \\
+TBD & A product or operational decision that remains to be approved. \\
+\end{longtable}
+
+\section{Overall Description}
+
+\subsection{Product Perspective}
+
+The system consists of customer and analyst interfaces, a backend API,
+a domain and business-rule layer, PostgreSQL persistence, and optional
+Redis and AI worker services. A local Docker-based deployment is the
+baseline evaluation environment. Kubernetes is an optional deployment
+model and is not required for local evaluation.
+
+\subsection{User Classes}
+
+\begin{itemize}
+    \item \textbf{Customer:} views their own mock transactions, creates
+    disputes for eligible transactions, submits supporting material
+    and checks dispute progress.
+    \item \textbf{Dispute analyst:} reviews disputes, examines
+    transaction information and risk indicators, requests evidence,
+    records notes and performs permitted state transitions.
+    \item \textbf{Administrator:} manages explicitly authorised users
+    and administrative configuration.
+    \item \textbf{Operator:} configures and monitors the deployment,
+    services, logs, metrics and background workers.
+    \item \textbf{AI worker:} optional service identity that performs
+    bounded, allowlisted analysis; it is not a human user or decision
+    authority.
+\end{itemize}
+
+\subsection{Operating Environment}
+
+The intended application stack is a web frontend, a Rust HTTP API,
+PostgreSQL and optional Redis and Ollama services. Docker provides a
+reproducible local runtime. Specific supported browser versions,
+operating-system versions, resource minima and production hosting
+targets are TBD and require product approval.
+
+\subsection{Design and Implementation Constraints}
+
+\begin{itemize}
+    \item PostgreSQL is authoritative for persisted transactions,
+    disputes, events and audit records.
+    \item Redis data shall be treated as ephemeral or rebuildable.
+    \item Authoritative monetary values shall use integer minor units
+    or an exact fixed-precision decimal representation, not binary
+    floating point.
+    \item Server-side domain rules, authentication and authorisation
+    remain authoritative regardless of client-side behaviour.
+    \item AI assistance shall not approve or reject disputes, issue
+    refunds, alter balances or bypass access control.
+    \item Kubernetes is optional for the baseline deliverable.
+\end{itemize}
+
+\subsection{Assumptions and Dependencies}
+
+The baseline uses seeded or otherwise mock transaction data. The
+database, object storage, malware scanner, identity provider and model
+provider may be external dependencies in a future deployment; their
+availability and service-level commitments are not established by this
+SRS. AI functionality is optional and its absence shall not prevent
+the core dispute workflow from operating.
+
+\section{External Interface Requirements}
+
+\subsection{User Interfaces}
+
+\req{SRS-UI-001}{The customer interface shall provide authenticated views of the customer's transactions, dispute submission, evidence submission and dispute status history.}{Inspection and end-to-end test}
+\req{SRS-UI-002}{The analyst interface shall provide an authorised case queue, case details, evidence access, risk indicators, notes, permitted actions and audit history.}{Inspection and role-based end-to-end test}
+\req{SRS-UI-003}{The interface shall identify AI-generated content as assistance and shall not present it as a final case decision.}{Inspection}
+\req{SRS-UI-004}{The interface shall display validation, authorisation, conflict and service errors without implying that a failed operation succeeded.}{Negative-path end-to-end test}
+\req{SRS-UI-005}{The customer interface shall display a stable dispute reference and the current persisted status after successful dispute creation.}{End-to-end test}
+
+\subsection{API Interfaces}
+
+The following route families define the intended interface surface;
+the exact request schemas, response schemas, pagination convention and
+error format shall be documented in the API contract before release.
+
+\begin{itemize}
+    \item Authentication: \texttt{/api/v1/auth/*}
+    \item Customer transactions: \texttt{/api/v1/transactions}
+    \item Customer disputes: \texttt{/api/v1/disputes}
+    \item Dispute evidence:
+    \texttt{/api/v1/disputes/:id/evidence}
+    \item Dispute timeline:
+    \texttt{/api/v1/disputes/:id/timeline}
+    \item Analyst cases and actions:
+    \texttt{/api/v1/analyst/disputes/*}
+    \item Health: \texttt{/health} and \texttt{/ready}
+\end{itemize}
+
+\req{SRS-API-001}{The API shall expose authenticated operations for customer transaction retrieval, dispute creation and retrieval, and dispute timeline retrieval.}{API integration test}
+\req{SRS-API-002}{The API shall expose separately authorised analyst operations for case retrieval, state transitions, notes and optional AI analysis.}{API integration test}
+\req{SRS-API-003}{The API shall validate request data at the server boundary and return a documented error for invalid input.}{API negative tests and contract inspection}
+\req{SRS-API-004}{The API shall provide health and readiness endpoints that distinguish process health from readiness to serve application traffic.}{Deployment integration test}
+\req{SRS-API-005}{The API contract shall specify authentication, authorisation, request and response schemas, error responses, pagination and upload limits before release.}{Inspection}
+
+\subsection{Service Interfaces}
+
+\req{SRS-INT-001}{The backend shall use PostgreSQL as the authoritative persistence interface for dispute state and related durable records.}{Architecture inspection and integration test}
+\req{SRS-INT-002}{The application shall remain usable for core dispute operations when Redis is unavailable, subject to the explicitly configured rate-limit and background-job degradation policy.}{Failure-injection test}
+\req{SRS-INT-003}{If AI inference is enabled, the application shall communicate with the configured model service through bounded application-controlled requests.}{Integration test}
+\req{SRS-INT-004}{Background workers shall communicate job outcomes and failures through durable application records or operational telemetry.}{Integration test and inspection}
+
+\section{Functional Requirements}
+
+\subsection{Authentication and Access Control}
+
+\req{SRS-FUN-001}{The system shall require an authenticated identity before providing non-public transaction or dispute data.}{API authorisation test}
+\req{SRS-FUN-002}{The system shall enforce role permissions on the server for customer, analyst and administrator operations.}{Role-based API test}
+\req{SRS-FUN-003}{The system shall determine customer transaction ownership using the authenticated identity and persisted ownership data, not a client-supplied identifier alone.}{Cross-customer access test}
+\req{SRS-FUN-004}{A customer shall not retrieve another customer's transaction, dispute or evidence by changing an identifier in a request.}{IDOR negative test}
+\req{SRS-FUN-005}{The system shall reject an analyst-only operation when the authenticated actor lacks the required permission.}{Role-based API test}
+\req{SRS-FUN-006}{Administrative permissions shall be explicitly assigned and checked server-side; they shall not be inferred from user-interface visibility or analyst status.}{Inspection and authorisation tests}
+
+\subsection{Transaction Retrieval and Eligibility}
+
+\req{SRS-FUN-010}{The system shall present a customer only transactions that the authenticated customer is authorised to view.}{API and end-to-end test}
+\req{SRS-FUN-011}{Before creating a dispute, the system shall verify transaction ownership and the configured eligibility policy on the server.}{Dispute creation integration test}
+\req{SRS-FUN-012}{The transaction eligibility rules, including any time window, transaction status, amount, reason or exception criteria, shall be documented configuration before release.}{Inspection}
+\req{SRS-FUN-013}{When a transaction is not eligible, the system shall reject dispute creation and return an explicit, safe explanation that does not disclose another user's information.}{Negative API test}
+
+\subsection{Dispute Creation and Lifecycle}
+
+\req{SRS-FUN-020}{The system shall persist a successfully created dispute with a unique, stable reference and an initial \texttt{SUBMITTED} state.}{Database integration test}
+\req{SRS-FUN-021}{The system shall maintain dispute states from the configured lifecycle, including \texttt{SUBMITTED}, \texttt{UNDER\_REVIEW}, \texttt{EVIDENCE\_REQUIRED}, \texttt{EVIDENCE\_RECEIVED}, \texttt{INVESTIGATING}, \texttt{APPROVED}, \texttt{REJECTED}, \texttt{REFUND\_PENDING} and \texttt{RESOLVED}, subject to the approved transition table.}{State-machine test}
+\req{SRS-FUN-022}{The system shall reject any state transition not present in the configured transition table.}{State-machine negative test}
+\req{SRS-FUN-023}{The system shall verify the actor's permission for each requested transition independently of whether that transition is valid for the current state.}{Authorisation and state-machine tests}
+\req{SRS-FUN-024}{The system shall persist each successful state change with its previous state, new state, actor, event and timestamp.}{Database integration test}
+\req{SRS-FUN-025}{The system shall expose the persisted dispute history to its authorised customer and analyst views.}{Role-based end-to-end test}
+\req{SRS-FUN-026}{The system shall enforce the approved set of active states and the rule that no transaction has more than one active dispute.}{Concurrent database integration test}
+\req{SRS-FUN-027}{Dispute creation, its initial event, its audit record and its idempotency result shall commit atomically or be rolled back together.}{Database failure-injection test}
+
+\subsection{Idempotency and Concurrent Updates}
+
+\req{SRS-FUN-030}{The dispute-creation API shall support an idempotency key scoped to the authenticated user.}{API integration test}
+\req{SRS-FUN-031}{A retry using the same user, key and canonical request shall return the original result without creating another dispute.}{Idempotency integration test}
+\req{SRS-FUN-032}{Reuse of an idempotency key with a different canonical request shall be rejected without creating a new dispute.}{Idempotency negative test}
+\req{SRS-FUN-033}{The system shall compare a caller's expected dispute version with the persisted version before applying a versioned update.}{Concurrency integration test}
+\req{SRS-FUN-034}{The system shall reject a stale update and shall not overwrite a newer persisted dispute state.}{Concurrent-update test}
+
+\subsection{Evidence and Analyst Notes}
+
+\req{SRS-FUN-040}{The system shall authorise evidence upload and retrieval against the associated dispute and authenticated actor.}{Evidence access-control test}
+\req{SRS-FUN-041}{The system shall enforce configured maximum upload size, allowed file types and server-side filename generation.}{Upload boundary tests}
+\req{SRS-FUN-042}{The system shall validate uploaded content independently of the filename extension and client-declared MIME type.}{Malformed and mismatched upload tests}
+\req{SRS-FUN-043}{The system shall store uploaded evidence outside directly executable web paths and persist its association and metadata.}{Deployment inspection and integration test}
+\req{SRS-FUN-044}{When malware scanning is required, the system shall not mark evidence clean unless an available scanner reports a clean result.}{Scanner failure-injection test}
+\req{SRS-FUN-045}{The system shall record an audit event for evidence submission and authorised evidence-related actions.}{Audit integration test}
+\req{SRS-FUN-046}{The analyst workflow shall permit authorised notes to be associated with the relevant dispute and shall preserve their actor and creation time.}{Role-based integration test}
+\req{SRS-FUN-047}{Evidence retention, deletion, encryption and malware-scan policy shall be approved and documented before production use.}{Inspection}
+
+\subsection{Risk Indicators}
+
+\req{SRS-FUN-050}{The system shall calculate and present deterministic risk signals separately from final dispute decisions.}{Unit and end-to-end tests}
+\req{SRS-FUN-051}{The system shall use configured, non-negative component weights whose sum is one when calculating a weighted risk score.}{Unit test and configuration validation}
+\req{SRS-FUN-052}{The system shall not substitute a missing or mathematically undefined signal with a zero-risk value unless an approved missing-data policy explicitly requires that treatment.}{Unit test}
+\req{SRS-FUN-053}{The system shall identify risk scores and anomaly indicators as advisory and not as proof of fraud.}{Inspection}
+\req{SRS-FUN-054}{Risk weights, normalisation parameters, thresholds, reference populations and currency handling shall be documented configuration before evaluation.}{Configuration inspection}
+\req{SRS-FUN-055}{The system shall avoid presenting a risk score outside the defined range \([0,1]\) when its configured inputs and weights meet the documented preconditions.}{Property-based test}
+
+\subsection{AI-Assisted Analysis}
+
+\req{SRS-FUN-060}{When enabled, AI analysis shall be limited to configured assistance such as classification, summarisation and evidence recommendations.}{Configuration inspection and integration test}
+\req{SRS-FUN-061}{The system shall validate AI output against an explicit schema before storing or presenting it as structured analysis.}{Schema-validation tests}
+\req{SRS-FUN-062}{The AI worker shall use only application-allowlisted tools and shall not receive unrestricted SQL execution capability.}{Architecture inspection and negative integration test}
+\req{SRS-FUN-063}{The system shall enforce configured iteration, tool-call, token and elapsed-time limits for bounded agent executions.}{Budget-exhaustion tests}
+\req{SRS-FUN-064}{Customer descriptions and uploaded evidence shall be treated as untrusted data and shall not grant an AI worker additional authority.}{Prompt-injection test and inspection}
+\req{SRS-FUN-065}{AI analysis shall not approve or reject a dispute, issue a refund, alter a balance, modify access permissions or bypass a human-authorised workflow.}{Negative integration test}
+\req{SRS-FUN-066}{If AI inference or a worker is unavailable, the core dispute workflow shall remain available and failed or incomplete AI work shall be identified as such.}{Failure-injection test}
+\req{SRS-FUN-067}{The system shall record structured AI execution events and tool outcomes without exposing private model chain-of-thought.}{Log inspection and integration test}
+\req{SRS-FUN-068}{The system shall associate AI analysis with its case, model/configuration metadata and completion or failure status, subject to approved data-retention policy.}{Database integration test and inspection}
+
+\subsection{Audit, Operations and Background Work}
+
+\req{SRS-FUN-070}{The system shall create an audit event for each security-sensitive operation and case lifecycle mutation.}{Audit coverage test}
+\req{SRS-FUN-071}{Ordinary application users shall not be able to silently rewrite or delete historical audit events.}{Authorisation and persistence tests}
+\req{SRS-FUN-072}{The system shall emit structured request logs containing a correlation identifier and safe error classification.}{Log inspection and integration test}
+\req{SRS-FUN-073}{The system shall not include credentials, secrets or unnecessary sensitive customer data in routine logs.}{Log review and automated redaction test}
+\req{SRS-FUN-074}{The system shall expose operational measurements for request rate, error rate, latency percentiles, active disputes, queue depth, AI job duration and database-pool utilisation where the corresponding component is enabled.}{Metrics endpoint test}
+\req{SRS-FUN-075}{A background operation shall be retried only when it is explicitly classified as retryable and protected against duplicate effects.}{Worker retry tests}
+\req{SRS-FUN-076}{The system shall report readiness separately from process liveness and shall not report readiness while required application dependencies are unavailable.}{Health-check integration test}
+
+\section{Data Requirements}
+
+\req{SRS-DAT-001}{The system shall persist users, transaction references, disputes, dispute events, evidence metadata, analyst notes, audit events and AI-analysis records required by enabled features.}{Schema inspection and integration tests}
+\req{SRS-DAT-002}{The system shall represent authoritative monetary amounts using integer currency minor units or fixed-precision decimal values.}{Schema inspection and arithmetic tests}
+\req{SRS-DAT-003}{Each persisted dispute shall reference its transaction and customer, and each persisted event shall reference its dispute and actor where applicable.}{Database constraint inspection}
+\req{SRS-DAT-004}{Redis shall not be the sole durable copy of a dispute, transaction, audit event or other authoritative record.}{Architecture inspection and Redis-failure test}
+\req{SRS-DAT-005}{The system shall define a versioned database migration path for schema changes.}{Migration test}
+\req{SRS-DAT-006}{Retention periods, data residency, deletion requests, encryption-key management and production data classification are TBD and shall be approved before live personal or financial data is processed.}{Inspection}
+
+\section{Non-Functional Requirements}
+
+\subsection{Security and Privacy}
+
+\req{SRS-NFR-SEC-001}{All protected resources shall enforce server-side authentication, ownership and role checks on every request.}{Security test suite}
+\req{SRS-NFR-SEC-002}{The system shall validate and encode untrusted input at appropriate boundaries to prevent injection and cross-site scripting.}{Static analysis and security tests}
+\req{SRS-NFR-SEC-003}{The system shall protect state-changing browser requests against cross-site request forgery when the selected authentication mechanism is susceptible to it.}{Security test}
+\req{SRS-NFR-SEC-004}{Evidence processing shall treat file names, extensions, MIME declarations and file contents as untrusted.}{Upload security test}
+\req{SRS-NFR-SEC-005}{Secrets shall be supplied through the approved deployment secret mechanism and shall not be committed to source control.}{Repository scan and deployment inspection}
+\req{SRS-NFR-SEC-006}{The system shall use transport encryption for production network paths carrying credentials, evidence or protected customer data.}{Deployment configuration inspection}
+\req{SRS-NFR-SEC-007}{The system shall document and test controls against broken access control, replay, duplicate submissions, race conditions, sensitive-data leakage and prompt injection.}{Threat-model and security-test review}
+
+\subsection{Reliability and Integrity}
+
+\req{SRS-NFR-REL-001}{A failed dispute mutation shall not leave partially committed dispute, event, audit or idempotency records.}{Database failure-injection test}
+\req{SRS-NFR-REL-002}{A Redis outage shall not cause loss of committed authoritative dispute data.}{Failure-injection test}
+\req{SRS-NFR-REL-003}{An AI or worker outage shall not corrupt dispute state or prevent non-AI case operations.}{Failure-injection test}
+\req{SRS-NFR-REL-004}{The system shall preserve the one-active-dispute-per-transaction invariant under concurrent requests.}{Concurrency test}
+
+\subsection{Performance and Scalability}
+
+\req{SRS-NFR-PER-001}{The API shall target a \(P_{95}\) response time below 200 ms and a \(P_{99}\) response time below 500 ms for non-AI endpoints under a documented benchmark workload.}{Performance test}
+\req{SRS-NFR-PER-002}{A performance result shall identify hardware, dataset size, concurrency, duration and software configuration.}{Benchmark report inspection}
+\req{SRS-NFR-PER-003}{Long-running AI operations shall execute asynchronously when synchronous execution would violate the configured API latency objective.}{Integration and performance test}
+\req{SRS-NFR-PER-004}{The backend shall support multiple API replicas without relying on process-local state for authoritative user sessions, dispute state or uniqueness enforcement.}{Multi-replica integration test}
+
+\subsection{Maintainability and Portability}
+
+\req{SRS-NFR-MNT-001}{A fresh checkout shall be startable using the documented local setup procedure and supported container configuration.}{Clean-environment acceptance test}
+\req{SRS-NFR-MNT-002}{The backend domain layer shall not depend directly on HTTP, Redis or PostgreSQL implementation details.}{Architecture inspection}
+\req{SRS-NFR-MNT-003}{Continuous integration shall fail when required formatting, lint, test or production-build checks fail.}{CI pipeline test}
+\req{SRS-NFR-MNT-004}{Kubernetes deployment shall remain optional for local evaluation of the core system.}{Clean-environment acceptance test}
+
+\subsection{Usability and Accessibility}
+
+\req{SRS-NFR-USE-001}{Customer and analyst views shall label dispute state and communicate the next permitted action without presenting advisory AI output as authoritative.}{Usability inspection}
+\req{SRS-NFR-USE-002}{The user interface shall make validation failures, stale-update conflicts and unavailable optional AI functions understandable without exposing sensitive implementation details.}{Usability test}
+\req{SRS-NFR-USE-003}{Accessibility conformance target and supported browser matrix are TBD and shall be approved before release acceptance.}{Inspection}
+
+\section{Verification and Acceptance}
+
+Each requirement's verification method defines its minimum evidence.
+Testable functional behaviour shall be covered by automated unit,
+integration, API or end-to-end tests as appropriate. Security-sensitive
+and concurrency requirements require negative or race-focused tests,
+not only successful-path demonstrations.
+
+The system is acceptable for the baseline demonstration when:
+
+\begin{enumerate}
+    \item A fresh checkout can be started using the documented local
+    instructions.
+    \item Seeded customers can authenticate and view only their own
+    transactions.
+    \item An eligible transaction can produce one persisted dispute,
+    with a stable reference and visible timeline.
+    \item Concurrent or repeated submissions cannot produce duplicate
+    active disputes.
+    \item Invalid transitions, stale updates and unauthorised access
+    are rejected.
+    \item Evidence and audit events are associated with the correct
+    case and actor.
+    \item Analysts can review deterministic risk signals without those
+    signals making a final decision.
+    \item If AI is enabled, invalid output and unavailable services are
+    handled without breaking the core dispute workflow.
+    \item Automated tests, formatting and lint checks pass in CI.
+    \item Performance claims, if made, include the required benchmark
+    conditions and results.
+\end{enumerate}
+
+\section{Traceability}
+
+The following map connects requirement groups to the corresponding
+engineering specification topics. Individual requirement identifiers
+remain the authoritative references for implementation and verification.
+
+\begin{longtable}{@{}p{0.28\textwidth}p{0.60\textwidth}@{}}
+\textbf{Requirement IDs} & \textbf{Related engineering-specification topics} \\
+\hline
+SRS-UI-* and SRS-API-* & Frontend Architecture; API Design; Definition of Done \\
+SRS-FUN-001--006 & Authentication and Authorisation; Role-Based Access Control \\
+SRS-FUN-010--013 & Scope; Customer Workspace; Dispute Creation Transaction \\
+SRS-FUN-020--034 & Dispute State Machine; Duplicate Dispute Prevention; Idempotency; Optimistic Concurrency; Audit Model \\
+SRS-FUN-040--047 & Evidence Upload Security; Analyst Workspace; Database Design \\
+SRS-FUN-050--055 & Mathematical Risk Engine; Risk Interpretation \\
+SRS-FUN-060--068 & AI Architecture; Structured AI Output; Agent Safety Bounds; AI Tool Allowlist \\
+SRS-FUN-070--076 & Audit Model; Observability; Metrics; Container Health; Failure Behaviour \\
+SRS-DAT-* & Domain Model; Database Design; Financial Data Representation; Redis Design \\
+SRS-NFR-SEC-* & Security Threat Model; Prompt Injection Defence; Configuration and Secrets \\
+SRS-NFR-REL-* & Duplicate Dispute Prevention; Dispute Creation Transaction; Failure Behaviour \\
+SRS-NFR-PER-* & Latency Objectives; Horizontal Scaling; Performance Testing \\
+SRS-NFR-MNT-* & Proposed Repository Structure; CI/CD; Docker Deployment \\
+\end{longtable}
+
+\section{Open Decisions}
+
+The following decisions must be settled by the product or operational
+owner before they become implementation policy:
+
+\begin{itemize}
+    \item eligibility rules, dispute reasons and any filing time limits;
+    \item the exact active-state set and complete state/role transition
+    matrix;
+    \item customer and analyst authentication mechanism, session policy
+    and administrator provisioning process;
+    \item evidence size and type limits, storage provider, scanning
+    policy, retention and deletion rules;
+    \item idempotency-key format, lifetime, storage and expiry policy;
+    \item risk weights, signal definitions, missing-data policy,
+    reference data, thresholds and currency normalisation;
+    \item AI model selection, data handling, timeout, budget, retention
+    and availability policy;
+    \item rate-limit values and behaviour during Redis failure;
+    \item API schemas, error contract, pagination and versioning policy;
+    \item supported browsers, accessibility target, production hosting,
+    recovery objectives and operational service levels;
+    \item applicable legal, privacy, financial-services and regulatory
+    obligations for any non-demo deployment.
+\end{itemize}
+
+\end{document}
