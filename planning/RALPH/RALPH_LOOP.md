@@ -31,7 +31,7 @@ with tests, all tests green, and the LaTeX report regenerated.
 - [x] **Audit & event log**: append dispute events + audit events atomically on creation and transition; expose an ordered event history; tests that the log matches the state changes.
 - [x] **Evidence upload workflow** (`receive_evidence`): size/type/extension/detected-content checks, random server-side name, scan-required guard (scanner-unavailable != clean), metadata persisted with audit; tests for each rejection path and the happy path.
 - [x] **Safe background retries** (`handle_job`): durable idempotency record, retryable vs non-retryable classification, replay returns stored result once; tests for duplicate delivery and non-retryable failure.
-- [ ] **Risk calculation integration**: `calculate_risk(dispute)` assembling all signals through the normalisation layer, returning either a score or an explicit unavailable-with-reason; tests.
+- [x] **Risk calculation integration**: `calculate_risk(dispute)` assembling all signals through the normalisation layer, returning either a score or an explicit unavailable-with-reason; tests.
 - [ ] **Report coverage**: extend the LaTeX report with sections/checks for every new module; confirm `run-tests.sh` regenerates the PDF with 0 failed checks.
 
 ## State

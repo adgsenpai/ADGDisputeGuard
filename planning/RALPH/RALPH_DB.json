@@ -10,7 +10,7 @@
     { "id": "audit-event-log", "status": "done" },
     { "id": "evidence-upload", "status": "done" },
     { "id": "background-retries", "status": "done" },
-    { "id": "risk-integration", "status": "todo" },
+    { "id": "risk-integration", "status": "done" },
     { "id": "report-coverage", "status": "todo" }
   ],
   "iterations": []

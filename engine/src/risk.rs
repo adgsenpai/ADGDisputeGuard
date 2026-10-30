@@ -33,7 +33,7 @@ impl Weights {
 }
 
 /// The five normalised signals in [0,1]. `None` means "unavailable / unknown".
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct Signals {
     pub amount: Option<f64>,
     pub velocity: Option<f64>,
@@ -240,4 +240,83 @@ pub fn merchant_signal(chargebacks: u64, total: u64) -> Option<f64> {
         return None;
     }
     Some(chargebacks as f64 / total as f64)
+}
+
+// ---------------------------------------------------------------------------
+// Risk calculation integration (equations.tex, "Risk Calculation Algorithm").
+//
+// Raw inputs are turned into bounded signals through the normalisation layer
+// above, then combined. If any required input is unavailable the result is an
+// explicit "unavailable" with a reason, never a quietly low score.
+// ---------------------------------------------------------------------------
+
+/// Raw inputs for each signal. A `None` field means that category's input is
+/// unavailable, which makes its signal unavailable too.
+#[derive(Debug, Clone, Default)]
+pub struct RiskInputs {
+    /// The configured z-score saturation scale for anomaly signals.
+    pub z_max: f64,
+    /// `(x, x_max)` for the amount signal.
+    pub amount: Option<(f64, f64)>,
+    /// `(history, current_amount)` for the history anomaly signal.
+    pub history: Option<(Vec<f64>, f64)>,
+    /// `(mu, sigma, current_velocity)` for the velocity signal.
+    pub velocity: Option<(f64, f64, f64)>,
+    /// `(chargebacks, total)` for the merchant signal.
+    pub merchant: Option<(u64, u64)>,
+    /// `(required_velocity, v_max)` for the geography signal.
+    pub geography: Option<(Option<f64>, f64)>,
+}
+
+/// Build the five bounded signals from raw inputs via the normalisation layer.
+pub fn assemble_signals(inputs: &RiskInputs) -> Signals {
+    Signals {
+        amount: inputs.amount.and_then(|(x, x_max)| amount_signal(x, x_max)),
+        velocity: inputs
+            .velocity
+            .and_then(|(mu, sigma, cur)| velocity_signal(mu, sigma, cur, inputs.z_max)),
+        merchant: inputs.merchant.and_then(|(c, t)| merchant_signal(c, t)),
+        history: inputs
+            .history
+            .as_ref()
+            .and_then(|(hist, x)| history_signal(hist, *x, inputs.z_max)),
+        geography: inputs.geography.and_then(|(v, v_max)| geography_signal(v, v_max)),
+    }
+}
+
+/// An explainable risk result: either a score with its signals, or an
+/// explicit unavailable with the reason.
+#[derive(Debug, Clone, PartialEq)]
+pub struct RiskResult {
+    pub score: Option<f64>,
+    pub signals: Signals,
+    pub explanation: String,
+}
+
+/// Calculate an explainable risk indicator from raw inputs. The result is
+/// advisory only and never decides a dispute.
+pub fn calculate_risk(inputs: &RiskInputs, weights: &Weights) -> RiskResult {
+    let signals = assemble_signals(inputs);
+    match combined_score(&signals, weights) {
+        Ok(score) => RiskResult {
+            score: Some(score),
+            signals,
+            explanation: "All required signals available.".into(),
+        },
+        Err(RiskError::MissingSignal(name)) => RiskResult {
+            score: None,
+            signals,
+            explanation: format!("One or more required inputs are unavailable: {name}"),
+        },
+        Err(RiskError::SignalOutOfRange(name)) => RiskResult {
+            score: None,
+            signals,
+            explanation: format!("A signal was outside [0,1]: {name}"),
+        },
+        Err(RiskError::InvalidWeights) => RiskResult {
+            score: None,
+            signals,
+            explanation: "Configured weights are negative or do not sum to 1.".into(),
+        },
+    }
 }

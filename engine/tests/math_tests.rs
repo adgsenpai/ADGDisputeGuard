@@ -235,6 +235,43 @@ fn merchant_signal_is_chargeback_ratio() {
     assert!(merchant_signal(6, 5).is_none());
 }
 
+// ---- Risk calculation integration ------------------------------------------
+
+fn full_inputs() -> RiskInputs {
+    RiskInputs {
+        z_max: 3.0,
+        amount: Some((900.0, 10_000.0)),
+        history: Some((HISTORY_STEADY.to_vec(), 232.0)),
+        velocity: Some((2.0, 0.5, 2.2)),
+        merchant: Some((3, 12)),
+        geography: Some((Some(50.0), 900.0)),
+    }
+}
+
+#[test]
+fn calculate_risk_produces_score_when_all_inputs_present() {
+    let result = calculate_risk(&full_inputs(), &equal_weights());
+    let score = result.score.expect("score should be available");
+    assert!((0.0..=1.0).contains(&score));
+    assert!(result.signals.amount.is_some() && result.signals.geography.is_some());
+    assert!(result.explanation.contains("available"));
+}
+
+#[test]
+fn calculate_risk_reports_unavailable_with_reason() {
+    // Remove merchant history -> merchant signal unavailable.
+    let mut inputs = full_inputs();
+    inputs.merchant = Some((0, 0));
+    let result = calculate_risk(&inputs, &equal_weights());
+    assert!(result.score.is_none());
+    assert!(result.explanation.contains("merchant"));
+    assert!(result.signals.merchant.is_none());
+    // A zero-variance history also yields an unavailable result, not a zero.
+    let mut inputs = full_inputs();
+    inputs.history = Some((HISTORY_CONSTANT.to_vec(), 900.0));
+    assert!(calculate_risk(&inputs, &equal_weights()).score.is_none());
+}
+
 #[test]
 fn combined_score_validates_weights_and_ranges() {
     let signals = Signals {
