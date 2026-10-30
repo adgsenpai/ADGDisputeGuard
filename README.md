@@ -63,11 +63,13 @@ npm run start
 ```
 
 Use `PORT=3100 npm run start` to choose another port. `npm run typecheck`
-checks the frontend's TypeScript types.
+checks the frontend's TypeScript types. Run `npm test` for the investigation
+loop termination and sample transaction integrity checks.
 
 The Next.js application lives in `apps/web`. It includes a Three.js shield,
-a responsive landing page, an interactive sample dispute journey, an
-explorable architecture diagram, and the three project PDFs. Fonts are
+a responsive landing page, swipeable sample payment cards, selectable
+transactions connected to an interactive dispute journey, an explorable
+architecture diagram, a RALPH concept visualisation, and the three project PDFs. Fonts are
 served locally. Reduced-motion preferences are respected, and an SVG
 fallback is shown when WebGL is unavailable.
 
@@ -75,6 +77,19 @@ The walkthrough is an illustrative frontend demonstration with mock data;
 it does not submit disputes, authenticate users, or move money. The three
 90+ figures are Lighthouse **targets**, not reported benchmark results.
 The architecture diagram describes the planned system.
+
+The card carousel supports pointer swipes, previous/next controls, direct
+card selection, and left/right keyboard arrows. Each card has its own mock
+transactions. Completed payments can populate the dispute walkthrough;
+pending payments explain the demo restriction without submitting anything.
+
+The RALPH planning files are currently empty. The landing-page concept is
+therefore based on the bounded investigation algorithm in the engineering
+specification and equations document, rather than a finalised RALPH design.
+Its three scenarios demonstrate successful human handoff, iteration-budget
+exhaustion, and rejection of a disallowed tool. The simulation performs no
+model calls, financial actions, or backend writes. Its two/three-iteration
+limits are illustrative; production limits remain configuration decisions.
 
 Document copies served by the website live in `apps/web/public/documents`.
 Refresh those copies when the source PDFs in `planning/Software Spec/pdf-outputs`

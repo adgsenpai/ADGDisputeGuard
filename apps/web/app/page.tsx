@@ -1,6 +1,13 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import TransactionShowcase from "@/components/transaction-showcase";
+import RalphLoop from "@/components/ralph-loop";
+import {
+  demoCards,
+  formatRand,
+  type DemoTransaction,
+} from "@/lib/demo-transactions";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
@@ -45,7 +52,7 @@ const steps = [
       "Start with the transaction. Add a reason, attach supporting evidence, and receive a unique case reference.",
     icon: FileText,
     heading: "Your voice. A clear starting point.",
-    body: "A card payment you don’t recognise shouldn’t leave you wondering what comes next.",
+    body: "A card payment you need to query shouldn’t leave you wondering what comes next.",
     event: "Dispute submitted",
     note: "Your case has been received and is ready for review.",
   },
@@ -134,6 +141,9 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [layer, setLayer] = useState(1);
+  const [demoTransaction, setDemoTransaction] = useState<DemoTransaction>(
+    demoCards[0].transactions[0],
+  );
   const revealRoot = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -177,14 +187,17 @@ export default function Home() {
             className={menuOpen ? "main-nav is-open" : "main-nav"}
             aria-label="Main navigation"
           >
-            <a onClick={() => setMenuOpen(false)} href="#approach">
-              The approach
+            <a onClick={() => setMenuOpen(false)} href="#transactions">
+              Transactions
             </a>
             <a onClick={() => setMenuOpen(false)} href="#workflow">
               How it works
             </a>
             <a onClick={() => setMenuOpen(false)} href="#architecture">
               Architecture
+            </a>
+            <a onClick={() => setMenuOpen(false)} href="#ralph">
+              RALPH loop
             </a>
             <a onClick={() => setMenuOpen(false)} href="#documentation">
               Documentation
@@ -426,12 +439,19 @@ export default function Home() {
           </div>
         </section>
 
+        <TransactionShowcase
+          onExplore={(transaction) => {
+            setDemoTransaction(transaction);
+            setStep(0);
+          }}
+        />
+
         <section className="workflow-section" id="workflow">
           <div className="container">
             <div className="section-heading reveal">
               <div>
                 <div className="eyebrow">
-                  <span className="section-index">02 /</span> THE DISPUTE
+                  <span className="section-index">03 /</span> THE DISPUTE
                   JOURNEY
                 </div>
                 <h2>
@@ -509,10 +529,12 @@ export default function Home() {
                       <ScanLine size={20} />
                     </span>
                     <div>
-                      <strong>Online card purchase</strong>
-                      <small>Unrecognised transaction · Mock data</small>
+                      <strong>{demoTransaction.merchant}</strong>
+                      <small>{demoTransaction.reason} · Mock data</small>
                     </div>
-                    <strong className="transaction-amount">R 1,249.00</strong>
+                    <strong className="transaction-amount">
+                      {formatRand(demoTransaction.amountMinor)}
+                    </strong>
                   </div>
                   <div className="preview-timeline">
                     {steps.map((item, index) => (
@@ -564,7 +586,7 @@ export default function Home() {
           <div className="container architecture-layout">
             <div className="architecture-copy reveal">
               <div className="eyebrow">
-                <span className="section-index">03 /</span> BUILT WITH INTENTION
+                <span className="section-index">04 /</span> BUILT WITH INTENTION
               </div>
               <h2>
                 Strong foundations.
@@ -639,6 +661,8 @@ export default function Home() {
           </div>
         </section>
 
+        <RalphLoop />
+
         <section className="quality-section">
           <div className="container quality-inner">
             <div className="quality-copy">
@@ -678,7 +702,7 @@ export default function Home() {
             <div className="section-heading reveal">
               <div>
                 <div className="eyebrow">
-                  <span className="section-index">04 /</span> OPEN THE BLUEPRINT
+                  <span className="section-index">06 /</span> OPEN THE BLUEPRINT
                 </div>
                 <h2>
                   The thinking
