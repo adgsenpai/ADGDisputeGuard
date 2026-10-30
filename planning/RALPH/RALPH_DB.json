@@ -1,0 +1,17 @@
+{
+  "project": "DisputeGuard Rust reference engine",
+  "completion_promise": "DISPUTEGUARD ENGINE COMPLETE",
+  "source_of_truth": "planning/Software Spec/equations.tex",
+  "items": [
+    { "id": "scaffold", "status": "done" },
+    { "id": "signal-normalisation", "status": "todo" },
+    { "id": "velocity-zscore", "status": "todo" },
+    { "id": "transition-table-roles", "status": "todo" },
+    { "id": "audit-event-log", "status": "todo" },
+    { "id": "evidence-upload", "status": "todo" },
+    { "id": "background-retries", "status": "todo" },
+    { "id": "risk-integration", "status": "todo" },
+    { "id": "report-coverage", "status": "todo" }
+  ],
+  "iterations": []
+}
