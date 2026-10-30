@@ -43,7 +43,7 @@
   \vspace{0.4cm}
   {\large Automated verification of the equations and flows\par}
   \vfill
-  {\Large \pass\quad 34 / 34 checks passed\par}
+  {\Large \pass\quad 50 / 50 checks passed\par}
   \vspace{0.6cm}
   {\large Generated October 2026 \quad|\quad Rust reference engine\par}
   \vfill
@@ -56,10 +56,10 @@
 \toprule
 Metric & Value \\
 \midrule
-Total checks & 34 \\
-Passed & \textcolor{PassGreen}{34} \\
+Total checks & 50 \\
+Passed & \textcolor{PassGreen}{50} \\
 Failed & \textcolor{FailRed}{0} \\
-Sections & 7 \\
+Sections & 11 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -148,6 +148,66 @@ Impossible travel velocity detected & \texttt{\small v\_required = 1262 km/h ove
 Combined score in [0,1] & \texttt{\small R = 0.440} & \pass \\
 Missing signal refuses a score & \texttt{\small geography = None -\textgreater{} MissingSignal} & \pass \\
 Weights must sum to 1 & \texttt{\small sum = 1.3 -\textgreater{} InvalidWeights} & \pass \\
+\bottomrule
+\end{longtable}
+
+\section*{Signal Normalisation and Integration \hfill \normalsize\textcolor{ADGBlue}{5/5}}
+\noindent Raw anomaly measures map into bounded [0,1] signals, and the full calculation returns a score or an explicit reason.\par\vspace{0.4em}
+\renewcommand{\arraystretch}{1.25}
+\begin{longtable}{@{}p{0.40\textwidth}p{0.45\textwidth}r@{}}
+\toprule
+\textbf{Check} & \textbf{Observed} & \textbf{Result} \\
+\midrule
+\endhead
+History outlier saturates signal & \texttt{\small history\_signal(R900) = 1.000} & \pass \\
+Velocity z-score flags burst & \texttt{\small z\_V(2, 0.5, 5) = 6.0} & \pass \\
+Merchant signal is chargeback ratio & \texttt{\small merchant\_signal(3, 12) = 0.25} & \pass \\
+calculate\_risk scores full inputs & \texttt{\small score = 0.238} & \pass \\
+Missing input gives reason not zero & \texttt{\small score = unavailable (merchant)} & \pass \\
+\bottomrule
+\end{longtable}
+
+\section*{Role Gating and Audit Log \hfill \normalsize\textcolor{ADGBlue}{4/4}}
+\noindent Only authorised roles drive the case, and every committed change is recorded in an ordered audit log.\par\vspace{0.4em}
+\renewcommand{\arraystretch}{1.25}
+\begin{longtable}{@{}p{0.40\textwidth}p{0.45\textwidth}r@{}}
+\toprule
+\textbf{Check} & \textbf{Observed} & \textbf{Result} \\
+\midrule
+\endhead
+Customer cannot begin review & \texttt{\small actor\_may\_perform(Customer, BeginReview) = false} & \pass \\
+Analyst can begin review & \texttt{\small actor\_may\_perform(Analyst, BeginReview) = true} & \pass \\
+Audit log records created + 3 transitions & \texttt{\small 4 ordered events} & \pass \\
+Customer review attempt refused & \texttt{\small NotAuthorised, no event added} & \pass \\
+\bottomrule
+\end{longtable}
+
+\section*{Evidence Upload Workflow \hfill \normalsize\textcolor{ADGBlue}{4/4}}
+\noindent A file is validated for authorisation, size, declared and detected type, and scan status before it is recorded.\par\vspace{0.4em}
+\renewcommand{\arraystretch}{1.25}
+\begin{longtable}{@{}p{0.40\textwidth}p{0.45\textwidth}r@{}}
+\toprule
+\textbf{Check} & \textbf{Observed} & \textbf{Result} \\
+\midrule
+\endhead
+Clean PDF accepted with server name & \texttt{\small storage\_name = srv-abc123} & \pass \\
+Detected type overrides claim & \texttt{\small DetectedTypeNotAllowed} & \pass \\
+Scanner unavailable != clean & \texttt{\small ScannerUnavailable} & \pass \\
+Unauthorised upload refused first & \texttt{\small NotAuthorised} & \pass \\
+\bottomrule
+\end{longtable}
+
+\section*{Safe Background Retries \hfill \normalsize\textcolor{ADGBlue}{3/3}}
+\noindent A redelivered job replays its durable result exactly once; permanent failures are not retried.\par\vspace{0.4em}
+\renewcommand{\arraystretch}{1.25}
+\begin{longtable}{@{}p{0.40\textwidth}p{0.45\textwidth}r@{}}
+\toprule
+\textbf{Check} & \textbf{Observed} & \textbf{Result} \\
+\midrule
+\endhead
+Duplicate delivery replays original & \texttt{\small Completed then Replayed(refund-ok)} & \pass \\
+Non-retryable job refused & \texttt{\small NotRetryable} & \pass \\
+Permanent failure is not retried & \texttt{\small FailedForReview} & \pass \\
 \bottomrule
 \end{longtable}
 

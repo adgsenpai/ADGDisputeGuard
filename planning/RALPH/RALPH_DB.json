@@ -11,7 +11,7 @@
     { "id": "evidence-upload", "status": "done" },
     { "id": "background-retries", "status": "done" },
     { "id": "risk-integration", "status": "done" },
-    { "id": "report-coverage", "status": "todo" }
+    { "id": "report-coverage", "status": "done" }
   ],
   "iterations": []
 }

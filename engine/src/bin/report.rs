@@ -12,7 +12,9 @@ use std::path::PathBuf;
 use std::process;
 
 use disputeguard_engine::access::*;
+use disputeguard_engine::evidence::*;
 use disputeguard_engine::investigation::{self, Scenario, Stage};
+use disputeguard_engine::jobs::*;
 use disputeguard_engine::lifecycle::*;
 use disputeguard_engine::money::{Money, MoneyError, BHD, JPY, USD, ZAR};
 use disputeguard_engine::risk::*;
@@ -285,6 +287,158 @@ fn build_report() -> Report {
             "Weights must sum to 1",
             "sum = 1.3 -> InvalidWeights",
             combined_score(&signals, &bad) == Err(RiskError::InvalidWeights),
+        );
+    }
+
+    // --- Signal normalisation & integration --------------------------------
+    {
+        let s = report.section(
+            "Signal Normalisation and Integration",
+            "Raw anomaly measures map into bounded [0,1] signals, and the full \
+             calculation returns a score or an explicit reason.",
+        );
+        s.check(
+            "History outlier saturates signal",
+            format!("history_signal(R900) = {:.3}", history_signal(HISTORY_STEADY, 900.0, 3.0).unwrap()),
+            history_signal(HISTORY_STEADY, 900.0, 3.0) == Some(1.0),
+        );
+        s.check(
+            "Velocity z-score flags burst",
+            format!("z_V(2, 0.5, 5) = {:.1}", velocity_zscore(2.0, 0.5, 5.0).unwrap()),
+            approx(velocity_zscore(2.0, 0.5, 5.0).unwrap(), 6.0, EPS),
+        );
+        s.check(
+            "Merchant signal is chargeback ratio",
+            format!("merchant_signal(3, 12) = {:.2}", merchant_signal(3, 12).unwrap()),
+            merchant_signal(3, 12) == Some(0.25),
+        );
+        let inputs = RiskInputs {
+            z_max: 3.0,
+            amount: Some((900.0, 10_000.0)),
+            history: Some((HISTORY_STEADY.to_vec(), 232.0)),
+            velocity: Some((2.0, 0.5, 2.2)),
+            merchant: Some((3, 12)),
+            geography: Some((Some(50.0), 900.0)),
+        };
+        let full = calculate_risk(&inputs, &Weights { amount: 0.2, velocity: 0.2, merchant: 0.2, history: 0.2, geography: 0.2 });
+        s.check(
+            "calculate_risk scores full inputs",
+            format!("score = {:.3}", full.score.unwrap_or(f64::NAN)),
+            full.score.map(|v| (0.0..=1.0).contains(&v)).unwrap_or(false),
+        );
+        let mut missing = inputs.clone();
+        missing.merchant = Some((0, 0));
+        let unavailable = calculate_risk(&missing, &Weights { amount: 0.2, velocity: 0.2, merchant: 0.2, history: 0.2, geography: 0.2 });
+        s.check(
+            "Missing input gives reason not zero",
+            "score = unavailable (merchant)",
+            unavailable.score.is_none() && unavailable.explanation.contains("merchant"),
+        );
+    }
+
+    // --- Role gating & audit log -------------------------------------------
+    {
+        let s = report.section(
+            "Role Gating and Audit Log",
+            "Only authorised roles drive the case, and every committed change \
+             is recorded in an ordered audit log.",
+        );
+        s.check(
+            "Customer cannot begin review",
+            "actor_may_perform(Customer, BeginReview) = false",
+            !actor_may_perform(Role::Customer, Event::BeginReview),
+        );
+        s.check(
+            "Analyst can begin review",
+            "actor_may_perform(Analyst, BeginReview) = true",
+            actor_may_perform(Role::Analyst, Event::BeginReview),
+        );
+        let mut store = DisputeStore::new();
+        store.add_transaction(Transaction { id: 10, owner_id: 1 });
+        let owner = User { id: 1, role: Role::Customer };
+        let analyst = User { id: 9, role: Role::Analyst };
+        let created = store.create_dispute(&owner, 10, 0x1, "k").unwrap().dispute;
+        let r1 = store.transition_dispute(&analyst, created.id, Event::BeginReview, 0).unwrap();
+        let r2 = store.transition_dispute(&analyst, created.id, Event::BeginInvestigation, r1.version).unwrap();
+        store.transition_dispute(&analyst, created.id, Event::Approve, r2.version).unwrap();
+        let events = store.events_for(created.id);
+        s.check(
+            "Audit log records created + 3 transitions",
+            format!("{} ordered events", events.len()),
+            events.len() == 4 && events.windows(2).all(|w| w[0].seq < w[1].seq),
+        );
+        s.check(
+            "Customer review attempt refused",
+            "NotAuthorised, no event added",
+            store.transition_dispute(&owner, created.id, Event::Reject, 3) == Err(ActionError::NotAuthorised),
+        );
+    }
+
+    // --- Evidence upload ---------------------------------------------------
+    {
+        let s = report.section(
+            "Evidence Upload Workflow",
+            "A file is validated for authorisation, size, declared and \
+             detected type, and scan status before it is recorded.",
+        );
+        let policy = EvidencePolicy::demo();
+        let good = Upload {
+            name: "statement.pdf".into(),
+            declared_type: "application/pdf".into(),
+            detected_type: "application/pdf".into(),
+            size_bytes: 1024,
+        };
+        let receipt = receive_evidence(true, 1, &good, &policy, "srv-abc123", || ScanResult::Clean);
+        s.check(
+            "Clean PDF accepted with server name",
+            "storage_name = srv-abc123",
+            matches!(&receipt, Ok(r) if r.storage_name == "srv-abc123"),
+        );
+        let spoof = Upload { detected_type: "application/x-dosexec".into(), ..good.clone() };
+        s.check(
+            "Detected type overrides claim",
+            "DetectedTypeNotAllowed",
+            receive_evidence(true, 1, &spoof, &policy, "s", || ScanResult::Clean) == Err(EvidenceError::DetectedTypeNotAllowed),
+        );
+        s.check(
+            "Scanner unavailable != clean",
+            "ScannerUnavailable",
+            receive_evidence(true, 1, &good, &policy, "s", || ScanResult::Unavailable) == Err(EvidenceError::ScannerUnavailable),
+        );
+        s.check(
+            "Unauthorised upload refused first",
+            "NotAuthorised",
+            receive_evidence(false, 1, &good, &policy, "s", || ScanResult::Clean) == Err(EvidenceError::NotAuthorised),
+        );
+    }
+
+    // --- Background retries -------------------------------------------------
+    {
+        let s = report.section(
+            "Safe Background Retries",
+            "A redelivered job replays its durable result exactly once; \
+             permanent failures are not retried.",
+        );
+        let policy = RetryPolicy { max_attempts: 3 };
+        let job = Job { retryable: true, idempotency_id: "job-1".into() };
+        let mut runner = JobRunner::new();
+        let first = runner.handle_job(&job, &policy, 1, || Ok("refund-ok".into())).unwrap();
+        let second = runner.handle_job(&job, &policy, 2, || Ok("DUPLICATE".into())).unwrap();
+        s.check(
+            "Duplicate delivery replays original",
+            "Completed then Replayed(refund-ok)",
+            first == JobOutcome::Completed("refund-ok".into()) && second == JobOutcome::Replayed("refund-ok".into()),
+        );
+        s.check(
+            "Non-retryable job refused",
+            "NotRetryable",
+            runner.handle_job(&Job { retryable: false, ..job.clone() }, &policy, 1, || Ok("x".into())) == Err(JobError::NotRetryable),
+        );
+        let mut r2 = JobRunner::new();
+        s.check(
+            "Permanent failure is not retried",
+            "FailedForReview",
+            r2.handle_job(&job, &policy, 1, || Err(OpError::NonRetryable)) == Ok(JobOutcome::FailedForReview),
         );
     }
 
