@@ -6,7 +6,7 @@
     { "id": "scaffold", "status": "done" },
     { "id": "signal-normalisation", "status": "done" },
     { "id": "velocity-zscore", "status": "done" },
-    { "id": "transition-table-roles", "status": "todo" },
+    { "id": "transition-table-roles", "status": "done" },
     { "id": "audit-event-log", "status": "todo" },
     { "id": "evidence-upload", "status": "todo" },
     { "id": "background-retries", "status": "todo" },

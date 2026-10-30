@@ -50,6 +50,34 @@ pub fn is_active(state: State) -> bool {
     !matches!(state, State::Approved | State::Rejected)
 }
 
+/// Whether an actor in the given role may perform `event`, independent of the
+/// current state. Review-driving events are restricted to analysts/admins; a
+/// customer may only submit evidence. Ownership for customer actions is
+/// enforced separately by the access layer.
+pub fn actor_may_perform(role: crate::access::Role, event: Event) -> bool {
+    use crate::access::Role;
+    use Event::*;
+    match event {
+        EvidenceSubmitted => matches!(role, Role::Customer | Role::Analyst | Role::Admin),
+        BeginReview | RequestEvidence | BeginInvestigation | Approve | Reject => {
+            matches!(role, Role::Analyst | Role::Admin)
+        }
+        // A financial action is never an authorised lifecycle event.
+        IssueRefund => false,
+    }
+}
+
+/// Authorised transition that also checks the actor's role: returns the next
+/// state only when the role may perform the event *and* `T(state, event)` is
+/// defined. Otherwise `None` (the caller cannot tell role denial from an
+/// undefined transition — both are simply "not allowed").
+pub fn transition_as(role: crate::access::Role, state: State, event: Event) -> Option<State> {
+    if !actor_may_perform(role, event) {
+        return None;
+    }
+    transition(state, event)
+}
+
 /// A dispute carries an optimistic-concurrency version `v`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Dispute {

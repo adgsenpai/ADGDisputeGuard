@@ -45,6 +45,30 @@ fn unlisted_transitions_are_invalid() {
 }
 
 #[test]
+fn role_gating_restricts_review_events() {
+    use disputeguard_engine::access::Role;
+    // Analyst/admin drive review; a customer may not begin review or decide.
+    assert!(actor_may_perform(Role::Analyst, Event::BeginReview));
+    assert!(actor_may_perform(Role::Admin, Event::Approve));
+    assert!(!actor_may_perform(Role::Customer, Event::BeginReview));
+    assert!(!actor_may_perform(Role::Customer, Event::Reject));
+    // A customer may submit evidence.
+    assert!(actor_may_perform(Role::Customer, Event::EvidenceSubmitted));
+    // Nobody may issue a refund as a lifecycle event.
+    assert!(!actor_may_perform(Role::Admin, Event::IssueRefund));
+
+    // transition_as combines role gating with the transition table.
+    assert_eq!(
+        transition_as(Role::Analyst, State::Submitted, Event::BeginReview),
+        Some(State::UnderReview)
+    );
+    // Right event, wrong role -> denied.
+    assert_eq!(transition_as(Role::Customer, State::Submitted, Event::BeginReview), None);
+    // Right role, undefined transition -> denied.
+    assert_eq!(transition_as(Role::Analyst, State::Approved, Event::Approve), None);
+}
+
+#[test]
 fn optimistic_concurrency_rejects_stale_version() {
     let dispute = Dispute { id: 1, transaction_id: 10, state: State::Submitted, version: 3 };
     // Correct version advances and bumps version.
