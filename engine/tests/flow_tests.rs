@@ -145,6 +145,49 @@ fn at_most_one_active_dispute_per_transaction() {
     assert!(store.create_dispute(&owner, 10, 0x3, "key-c").is_ok());
 }
 
+#[test]
+fn audit_log_records_creation_and_transitions_in_order() {
+    let mut store = store_with_tx();
+    let owner = User { id: 1, role: Role::Customer };
+    let analyst = User { id: 9, role: Role::Analyst };
+    let created = store.create_dispute(&owner, 10, 0x1, "k").unwrap().dispute;
+
+    // Analyst drives the case; a customer attempting review is refused and
+    // leaves no audit entry.
+    assert_eq!(
+        store.transition_dispute(&owner, created.id, Event::BeginReview, 0),
+        Err(ActionError::NotAuthorised)
+    );
+    let r1 = store.transition_dispute(&analyst, created.id, Event::BeginReview, 0).unwrap();
+    assert_eq!(r1.state, State::UnderReview);
+
+    // A valid event with a stale version is rejected and adds no event.
+    assert!(matches!(
+        store.transition_dispute(&analyst, created.id, Event::BeginInvestigation, 0),
+        Err(ActionError::Transition(TransitionError::VersionConflict { .. }))
+    ));
+
+    let r2 = store.transition_dispute(&analyst, created.id, Event::BeginInvestigation, r1.version).unwrap();
+    let r3 = store.transition_dispute(&analyst, created.id, Event::Approve, r2.version).unwrap();
+    assert_eq!(r3.state, State::Approved);
+
+    // An undefined transition from a terminal state is refused.
+    assert!(matches!(
+        store.transition_dispute(&analyst, created.id, Event::Reject, r3.version),
+        Err(ActionError::Transition(TransitionError::InvalidTransition { .. }))
+    ));
+
+    let events = store.events_for(created.id);
+    assert_eq!(events.len(), 4); // created + 3 successful transitions
+    assert!(matches!(events[0].kind, AuditKind::DisputeCreated { .. }));
+    assert!(matches!(
+        events[3].kind,
+        AuditKind::DisputeTransition { to: State::Approved, .. }
+    ));
+    // Sequence numbers are strictly increasing in commit order.
+    assert!(events.windows(2).all(|w| w[0].seq < w[1].seq));
+}
+
 // ---- Bounded investigation --------------------------------------------------
 
 #[test]
