@@ -25,7 +25,7 @@ with tests, all tests green, and the LaTeX report regenerated.
 ## Backlog
 
 - [x] Reference engine scaffold: money, access, lifecycle, service, risk, investigation, samples, report, run-tests.sh
-- [ ] **Merchant & signal normalisation**: map raw anomaly z-scores to bounded `[0,1]` signals (history, velocity, geography) and add a deterministic merchant signal; tests for boundaries and monotonicity.
+- [x] **Merchant & signal normalisation**: map raw anomaly z-scores to bounded `[0,1]` signals (history, velocity, geography) and add a deterministic merchant signal; tests for boundaries and monotonicity.
 - [ ] **Velocity z-score (`z_V`)**: implement `z_V = (V - mu) / sigma` with `sigma > 0` guard and unavailable-on-insufficient-history; tests.
 - [ ] **Full transition table + role gating**: complete `T(S,E)` for all specified states/events and add `actor_may_perform(actor, event, dispute)`; tests for allowed/denied actors and every edge.
 - [ ] **Audit & event log**: append dispute events + audit events atomically on creation and transition; expose an ordered event history; tests that the log matches the state changes.

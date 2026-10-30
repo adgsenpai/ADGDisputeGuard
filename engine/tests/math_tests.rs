@@ -169,6 +169,58 @@ fn combined_score_refuses_missing_signal() {
     );
 }
 
+// ---- Signal normalisation ---------------------------------------------------
+
+#[test]
+fn zscore_to_signal_is_bounded_and_monotone_in_magnitude() {
+    let z_max = 3.0;
+    assert_eq!(zscore_to_signal(0.0, z_max), Some(0.0));
+    let a = zscore_to_signal(1.0, z_max).unwrap();
+    let b = zscore_to_signal(2.0, z_max).unwrap();
+    assert!(a < b);
+    // Saturates at the scale and clamps beyond it; sign does not matter.
+    assert_eq!(zscore_to_signal(3.0, z_max), Some(1.0));
+    assert_eq!(zscore_to_signal(10.0, z_max), Some(1.0));
+    assert_eq!(zscore_to_signal(-10.0, z_max), Some(1.0));
+    assert!(zscore_to_signal(1.0, 0.0).is_none());
+    assert!(zscore_to_signal(f64::NAN, z_max).is_none());
+}
+
+#[test]
+fn history_signal_maps_outlier_to_saturated_value() {
+    let s = history_signal(HISTORY_STEADY, 900.0, 3.0).unwrap();
+    assert_eq!(s, 1.0); // z ~ 46 >> 3 -> clamps to 1
+    let normal = history_signal(HISTORY_STEADY, 232.0, 3.0).unwrap();
+    assert!((0.0..=1.0).contains(&normal) && normal < 0.5);
+    // Zero variance -> unavailable, not zero.
+    assert!(history_signal(HISTORY_CONSTANT, 900.0, 3.0).is_none());
+    assert!(robust_history_signal(HISTORY_CONSTANT, 900.0, 3.0).is_none());
+}
+
+#[test]
+fn geography_signal_from_required_velocity() {
+    let dist = haversine_km(JOHANNESBURG.0, JOHANNESBURG.1, CAPE_TOWN.0, CAPE_TOWN.1);
+    // ~1262 km in 1 hour against a 900 km/h feasible max -> saturates to 1.
+    let impossible = geography_signal(required_velocity(dist, 1.0), 900.0).unwrap();
+    assert_eq!(impossible, 1.0);
+    // Same distance over a full day is easily feasible -> low signal.
+    let feasible = geography_signal(required_velocity(dist, 24.0), 900.0).unwrap();
+    assert!(feasible < 0.1);
+    // Missing journey -> unavailable.
+    assert!(geography_signal(None, 900.0).is_none());
+    assert!(geography_signal(Some(10.0), 0.0).is_none());
+}
+
+#[test]
+fn merchant_signal_is_chargeback_ratio() {
+    assert_eq!(merchant_signal(3, 12), Some(0.25));
+    assert_eq!(merchant_signal(0, 50), Some(0.0));
+    assert_eq!(merchant_signal(5, 5), Some(1.0));
+    // No history -> unavailable; impossible counts -> unavailable.
+    assert!(merchant_signal(0, 0).is_none());
+    assert!(merchant_signal(6, 5).is_none());
+}
+
 #[test]
 fn combined_score_validates_weights_and_ranges() {
     let signals = Signals {

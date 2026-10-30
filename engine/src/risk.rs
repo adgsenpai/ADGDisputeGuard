@@ -173,3 +173,56 @@ pub fn required_velocity(distance_km: Option<f64>, elapsed: f64) -> Option<f64> 
     }
     Some(d / elapsed)
 }
+
+// ---------------------------------------------------------------------------
+// Signal normalisation: map raw anomaly measures into bounded [0,1] signals.
+//
+// The combined score requires every signal in [0,1]. These helpers convert
+// the spec's raw measures (z-scores, required velocity, merchant history)
+// into that range. A missing or undefined input stays `None` — never a
+// silent zero. The scales are configuration, not baked-in policy.
+// ---------------------------------------------------------------------------
+
+/// Map an anomaly z-score to a bounded `[0,1]` signal. The deviation
+/// *magnitude* drives the signal; `z_max > 0` is the configured scale at
+/// which it saturates (the spec flags `|z| > 3` as unusual, a sensible
+/// default scale). Returns `None` for a non-finite z or invalid scale.
+pub fn zscore_to_signal(z: f64, z_max: f64) -> Option<f64> {
+    if !z.is_finite() || !z_max.is_finite() || z_max <= 0.0 {
+        return None;
+    }
+    Some((z.abs() / z_max).min(1.0))
+}
+
+/// Historical amount anomaly as a `[0,1]` signal, via the classic z-score.
+/// Unavailable when there is insufficient history or zero variance.
+pub fn history_signal(history: &[f64], x: f64, z_max: f64) -> Option<f64> {
+    zscore_to_signal(z_score(history, x)?, z_max)
+}
+
+/// Robust (MAD-based) historical anomaly as a `[0,1]` signal. Unavailable
+/// when `MAD = 0`.
+pub fn robust_history_signal(history: &[f64], x: f64, z_max: f64) -> Option<f64> {
+    zscore_to_signal(robust_z_score(history, x)?, z_max)
+}
+
+/// Geography signal from the required travel velocity relative to a feasible
+/// maximum speed `v_max > 0`: `min(1, v_required / v_max)`. An impossible
+/// journey saturates to 1; a missing journey stays `None`.
+pub fn geography_signal(required_velocity: Option<f64>, v_max: f64) -> Option<f64> {
+    let v = required_velocity?;
+    if !v_max.is_finite() || v_max <= 0.0 || !v.is_finite() || v < 0.0 {
+        return None;
+    }
+    Some((v / v_max).min(1.0))
+}
+
+/// Deterministic merchant signal: the observed chargeback ratio
+/// `chargebacks / total` in `[0,1]`. Unavailable when there is no history
+/// (`total = 0`); invalid when `chargebacks > total`.
+pub fn merchant_signal(chargebacks: u64, total: u64) -> Option<f64> {
+    if total == 0 || chargebacks > total {
+        return None;
+    }
+    Some(chargebacks as f64 / total as f64)
+}

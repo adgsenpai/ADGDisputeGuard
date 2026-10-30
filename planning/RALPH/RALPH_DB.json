@@ -4,7 +4,7 @@
   "source_of_truth": "planning/Software Spec/equations.tex",
   "items": [
     { "id": "scaffold", "status": "done" },
-    { "id": "signal-normalisation", "status": "todo" },
+    { "id": "signal-normalisation", "status": "done" },
     { "id": "velocity-zscore", "status": "todo" },
     { "id": "transition-table-roles", "status": "todo" },
     { "id": "audit-event-log", "status": "todo" },
