@@ -20,3 +20,6 @@ engine/report/*.log
 engine/report/*.out
 engine/report/*.toc
 engine/report/build*.log
+
+# Ralph loop local state
+.claude/ralph-loop.local.md
