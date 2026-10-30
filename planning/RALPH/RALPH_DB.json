@@ -18,8 +18,8 @@
     { "id": "report-coverage", "status": "done", "commit": "d7ac5a4" },
     { "id": "app-domain-core", "status": "done", "commit": "850acc6" },
     { "id": "dispute-api-routes", "status": "done", "commit": "dbd8eac" },
-    { "id": "ollama-investigation", "status": "done" },
-    { "id": "app-ui", "status": "todo" },
+    { "id": "ollama-investigation", "status": "done", "commit": "48b124d" },
+    { "id": "app-ui", "status": "done" },
     { "id": "infra-docker-ollama", "status": "todo" },
     { "id": "phase2-report-docs", "status": "todo" }
   ],
