@@ -19,8 +19,8 @@
     { "id": "app-domain-core", "status": "done", "commit": "850acc6" },
     { "id": "dispute-api-routes", "status": "done", "commit": "dbd8eac" },
     { "id": "ollama-investigation", "status": "done", "commit": "48b124d" },
-    { "id": "app-ui", "status": "done" },
-    { "id": "infra-docker-ollama", "status": "todo" },
+    { "id": "app-ui", "status": "done", "commit": "89a118d" },
+    { "id": "infra-docker-ollama", "status": "done" },
     { "id": "phase2-report-docs", "status": "todo" }
   ],
   "iterations": []

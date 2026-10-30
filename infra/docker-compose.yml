@@ -1,0 +1,52 @@
+# DisputeGuard local stack: the Next.js app + a local Ollama model server.
+#
+#   cd infra && docker compose up --build
+#
+# First run: pull a model once Ollama is up (see pull-model.sh), then open
+# http://localhost:3000/console.
+
+services:
+  ollama:
+    image: ollama/ollama:0.3.14
+    container_name: disputeguard-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  # One-shot: pull the configured model into the Ollama volume, then exit.
+  model-pull:
+    image: ollama/ollama:0.3.14
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2}
+    entrypoint: ["/bin/sh", "-c", "ollama pull \"$${OLLAMA_MODEL}\""]
+    restart: "no"
+
+  web:
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    container_name: disputeguard-web
+    ports:
+      - "3000:3000"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2}
+      - OLLAMA_TIMEOUT_MS=${OLLAMA_TIMEOUT_MS:-20000}
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  ollama-models:
