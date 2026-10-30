@@ -8,7 +8,7 @@
     { "id": "velocity-zscore", "status": "done" },
     { "id": "transition-table-roles", "status": "done" },
     { "id": "audit-event-log", "status": "done" },
-    { "id": "evidence-upload", "status": "todo" },
+    { "id": "evidence-upload", "status": "done" },
     { "id": "background-retries", "status": "todo" },
     { "id": "risk-integration", "status": "todo" },
     { "id": "report-coverage", "status": "todo" }
