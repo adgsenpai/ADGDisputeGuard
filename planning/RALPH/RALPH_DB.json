@@ -1,17 +1,27 @@
 {
-  "project": "DisputeGuard Rust reference engine",
+  "project": "DisputeGuard — engine + Next.js app + Ollama infra",
   "completion_promise": "DISPUTEGUARD ENGINE COMPLETE",
   "source_of_truth": "planning/Software Spec/equations.tex",
+  "phases": {
+    "phase1_engine": "done",
+    "phase2_app": "in_progress"
+  },
   "items": [
-    { "id": "scaffold", "status": "done" },
-    { "id": "signal-normalisation", "status": "done" },
-    { "id": "velocity-zscore", "status": "done" },
-    { "id": "transition-table-roles", "status": "done" },
-    { "id": "audit-event-log", "status": "done" },
-    { "id": "evidence-upload", "status": "done" },
-    { "id": "background-retries", "status": "done" },
-    { "id": "risk-integration", "status": "done" },
-    { "id": "report-coverage", "status": "done" }
+    { "id": "scaffold", "status": "done", "commit": "19e806a" },
+    { "id": "signal-normalisation", "status": "done", "commit": "d2e16df" },
+    { "id": "velocity-zscore", "status": "done", "commit": "b2370b9" },
+    { "id": "transition-table-roles", "status": "done", "commit": "5555470" },
+    { "id": "audit-event-log", "status": "done", "commit": "e8ded00" },
+    { "id": "evidence-upload", "status": "done", "commit": "3d32dfa" },
+    { "id": "background-retries", "status": "done", "commit": "ec1777c" },
+    { "id": "risk-integration", "status": "done", "commit": "fe9a5d3" },
+    { "id": "report-coverage", "status": "done", "commit": "d7ac5a4" },
+    { "id": "app-domain-core", "status": "todo" },
+    { "id": "dispute-api-routes", "status": "todo" },
+    { "id": "ollama-investigation", "status": "todo" },
+    { "id": "app-ui", "status": "todo" },
+    { "id": "infra-docker-ollama", "status": "todo" },
+    { "id": "phase2-report-docs", "status": "todo" }
   ],
   "iterations": []
 }
