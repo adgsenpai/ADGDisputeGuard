@@ -1,0 +1,13 @@
+{
+  "name": "adg-disputeguard",
+  "private": true,
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @disputeguard/web",
+    "build": "npm run build --workspace @disputeguard/web",
+    "start": "npm run start --workspace @disputeguard/web",
+    "typecheck": "npm run typecheck --workspace @disputeguard/web"
+  }
+}
