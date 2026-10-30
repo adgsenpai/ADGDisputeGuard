@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import TransactionShowcase from "@/components/transaction-showcase";
 import RalphLoop from "@/components/ralph-loop";
+import StackFlow from "@/components/stack-flow";
 import {
   demoCards,
   formatRand,
@@ -659,6 +660,7 @@ export default function Home() {
               </div>
             </div>
           </div>
+          <StackFlow />
         </section>
 
         <RalphLoop />
