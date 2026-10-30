@@ -17,8 +17,8 @@
     { "id": "risk-integration", "status": "done", "commit": "fe9a5d3" },
     { "id": "report-coverage", "status": "done", "commit": "d7ac5a4" },
     { "id": "app-domain-core", "status": "done", "commit": "850acc6" },
-    { "id": "dispute-api-routes", "status": "done" },
-    { "id": "ollama-investigation", "status": "todo" },
+    { "id": "dispute-api-routes", "status": "done", "commit": "dbd8eac" },
+    { "id": "ollama-investigation", "status": "done" },
     { "id": "app-ui", "status": "todo" },
     { "id": "infra-docker-ollama", "status": "todo" },
     { "id": "phase2-report-docs", "status": "todo" }

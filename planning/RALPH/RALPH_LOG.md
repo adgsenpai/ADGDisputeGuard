@@ -25,4 +25,5 @@ commit. Newest at the bottom.
 | # | Item | Verification | Commit |
 |---|------|--------------|--------|
 | 9 | App domain core (TS port) | +8 node:test (13 total) | `850acc6` |
-| 10 | Dispute API routes | | |
+| 10 | Dispute API routes | +6 API tests (19 total), tsc clean | `dbd8eac` |
+| 11 | Ollama-backed bounded investigation | | |
