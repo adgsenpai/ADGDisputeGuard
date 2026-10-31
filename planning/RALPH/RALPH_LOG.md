@@ -72,7 +72,7 @@ South African data; 27 TS + 9 Playwright GUI tests green, showcase re-recorded.
 | 30 | Chargeback reason codes + SLAs | `run-regression.sh` green (30 TS, 10 GUI); Visa/MC reason-code catalogue, per-dispute code + openedAt, SLA countdown, evidence checklist, provisional credit | `29bf77e` |
 | 31 | Tamper-evident audit log | `run-regression.sh` green (34 TS, 10 GUI); SHA-256 hash-chained audit events, `/api/audit/verify`, integrity badge; chain + tamper-detection unit tests | `1035568` |
 | 32 | Case report PDF export | `run-regression.sh` green (36 TS, 12 GUI); `/api/disputes/[id]/report` renders audit-ready LaTeX + pdflatex PDF with reason code, audit trail, evidence, chain head; download action; render + API tests | `a5ff2a7` |
-| 33 | Multi-language console (EN/isiZulu/Afrikaans) | `run-regression.sh` green (39 TS, 13 GUI); i18n layer + language switcher, translated nav/views/KPIs/login; completeness + e2e tests | `pending` |
+| 33 | Multi-language console (EN/isiZulu/Afrikaans) | `run-regression.sh` green (39 TS, 13 GUI); i18n layer + language switcher, translated nav/views/KPIs/login; completeness + e2e tests | `4ae411e` |
 
 ## Completion
 
