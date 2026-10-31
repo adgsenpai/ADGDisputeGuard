@@ -52,7 +52,7 @@ report, 25 TS, and 5 Playwright GUI tests; showcase video recorded and embedded.
 
 | # | Item | Verification | Commit |
 |---|------|--------------|--------|
-| 22 | Design system + SA data + personas | `run-regression.sh` green; personas + generated avatars + theme tokens + SA seed data across 5 customers; unit + e2e updated | `pending` |
+| 22 | Design system + SA data + personas | `run-regression.sh` green; personas + generated avatars + theme tokens + SA seed data across 5 customers; unit + e2e updated | `14255b5` |
 
 ## Completion
 
