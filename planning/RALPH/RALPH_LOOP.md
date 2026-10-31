@@ -98,7 +98,7 @@ Per-item protocol for this phase:
 - [x] **Transactions tab**: modern table with search, category filters, amount + advisory risk badge, and open-dispute action; respects RBAC visibility. e2e covers search/filter + open.
 - [x] **Disputes queue + case workspace**: a filterable dispute queue and a case workspace with a lifecycle stepper, role-gated actions, evidence panel, bounded investigation, and an audit timeline. e2e covers the analyst path + investigation in the new UI.
 - [x] **Investigations + Evidence + Audit + Settings tabs**: aggregate views across cases (recent investigations, evidence register, full audit log) and a settings/profile tab. e2e smoke for each tab.
-- [ ] **Showcase refresh + docs**: re-record the showcase against the new SaaS UI (login → dashboard → flows), refresh README/`testing/README.md`; confirm `testing/run-regression.sh` is fully green.
+- [x] **Showcase refresh + docs**: re-record the showcase against the new SaaS UI (login → dashboard → flows), refresh README/`testing/README.md`; confirm `testing/run-regression.sh` is fully green.
 
 ## State
 

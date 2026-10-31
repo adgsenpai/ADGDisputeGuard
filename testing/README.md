@@ -10,10 +10,15 @@ testing/
 ├── record-showcase.mjs      # records the showcase walkthrough + per-flow GIFs
 ├── e2e/
 │   ├── playwright.config.ts  # system Chrome, video on, auto-starts the app
+│   ├── helpers.ts            # passwordless sign-in + tab navigation helpers
 │   ├── landing.spec.ts
 │   ├── console-core.spec.ts
+│   ├── console-dashboard.spec.ts
+│   ├── console-transactions.spec.ts
+│   ├── console-disputes.spec.ts
 │   ├── console-lifecycle.spec.ts
-│   └── console-investigate.spec.ts
+│   ├── console-investigate.spec.ts
+│   └── console-tabs.spec.ts
 └── media/
     ├── videos/showcase.mp4
     ├── gifs/showcase.gif + per-flow GIFs
@@ -37,8 +42,8 @@ SKIP_ENGINE=1 bash testing/run-regression.sh   # unit + GUI only (no Rust/LaTeX)
 | Suite        | What runs                                             |
 | ------------ | ----------------------------------------------------- |
 | Rust engine  | `engine/run-tests.sh` — 50 unit tests, report 50/50   |
-| App unit     | `apps/web` `npm test` — 25 `node:test` cases          |
-| GUI / e2e    | Playwright — landing + console flows, 5 tests          |
+| App unit     | `apps/web` `npm test` — `node:test` cases             |
+| GUI / e2e    | Playwright — landing + SaaS console flows, 9 tests     |
 
 ## GUI tests (Playwright)
 
@@ -69,9 +74,15 @@ Coverage:
 | Spec                          | Flow verified                                                      |
 | ----------------------------- | ------------------------------------------------------------------ |
 | `landing.spec.ts`             | Hero + sections render, shield/SVG fallback, docs link, no errors  |
-| `console-core.spec.ts`        | List transactions, open a dispute, idempotent replay, audit entry  |
+| `console-core.spec.ts`        | Sign in, list transactions, open a dispute, idempotent replay, audit |
+| `console-dashboard.spec.ts`   | KPI tiles and the three charts render                              |
+| `console-transactions.spec.ts`| Search, category filter, risk badge, open from a filtered row      |
+| `console-disputes.spec.ts`    | Dispute queue filters by state                                     |
 | `console-lifecycle.spec.ts`   | Role gating, evidence upload, analyst path to approval, stale→409   |
 | `console-investigate.spec.ts` | Bounded investigation renders; tool-call budget ≤ 3; advisory note  |
+| `console-tabs.spec.ts`        | Investigations, Evidence, Audit and Settings tabs render           |
+
+All console specs sign in through the passwordless persona login (`helpers.ts`).
 
 ## Recording the showcase
 
@@ -80,10 +91,11 @@ npm run build --prefix apps/web      # the recorder needs a production build
 node testing/record-showcase.mjs
 ```
 
-Produces `media/videos/showcase.mp4`, `media/gifs/showcase.gif`, and three
-per-flow GIFs. The recorder starts its own app server on `:3123`, drives a
-narrated walkthrough with on-screen captions, records it with Chrome, and
-converts the clips to MP4/GIF with `ffmpeg` (must be on `PATH`).
+Produces `media/videos/showcase.mp4`, `media/gifs/showcase.gif`, and the
+per-flow GIFs `login.gif`, `dashboard.gif` and `case-workspace.gif`. The
+recorder seeds portfolio data via the API, starts its own app server on `:3123`,
+drives a narrated walkthrough with on-screen captions, records it with Chrome,
+and converts the clips to MP4/GIF with `ffmpeg` (must be on `PATH`).
 
 ## Requirements
 

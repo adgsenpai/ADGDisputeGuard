@@ -5,7 +5,7 @@
 </p>
 
 ![Project status](https://img.shields.io/badge/status-engine%20%2B%20app%20%2B%20infra-blue)
-![Tests](https://img.shields.io/badge/tests-50%20Rust%20%7C%2025%20TS%20%7C%205%20GUI-brightgreen)
+![Tests](https://img.shields.io/badge/tests-50%20Rust%20%7C%2027%20TS%20%7C%209%20GUI-brightgreen)
 ![AI](https://img.shields.io/badge/investigation-Ollama%20(bounded)-6f42c1)
 ![Documentation](https://img.shields.io/badge/docs-LaTeX%20%7C%20PDF-orange)
 ![Build](https://img.shields.io/badge/PDF%20build-Docker-2496ED?logo=docker&logoColor=white)
@@ -31,19 +31,20 @@ bounded investigation) are implemented and tested end to end.
 
 ## Showcase
 
-A narrated walkthrough of the landing page and the working `/console`: open a
-dispute, drive the role-gated lifecycle, upload evidence, run the bounded AI
-investigation, and read the audit trail. Recorded automatically by
+A narrated walkthrough of the SaaS console: passwordless persona sign-in (your
+RBAC role comes from who you sign in as), the portfolio dashboard, the
+transactions tab, the dispute case workspace (role-gated lifecycle, evidence,
+bounded AI investigation), and the audit log. Recorded automatically by
 [`testing/record-showcase.mjs`](testing/record-showcase.mjs).
 
 <p align="center">
-  <img src="testing/media/gifs/showcase.gif" alt="DisputeGuard end-to-end walkthrough" width="900">
+  <img src="testing/media/gifs/showcase.gif" alt="DisputeGuard SaaS console walkthrough" width="900">
 </p>
 
 > ▶️ **[Watch the full-quality MP4](testing/media/videos/showcase.mp4)** · per-flow clips:
-> [landing](testing/media/gifs/landing.gif) ·
-> [dispute lifecycle](testing/media/gifs/dispute-lifecycle.gif) ·
-> [bounded investigation](testing/media/gifs/investigation.gif)
+> [sign-in](testing/media/gifs/login.gif) ·
+> [dashboard](testing/media/gifs/dashboard.gif) ·
+> [case workspace](testing/media/gifs/case-workspace.gif)
 
 ## Brand graphics
 
@@ -57,9 +58,9 @@ investigation, and read the audit trail. Recorded automatically by
 | Area                 | Current status                                                        |
 | -------------------- | --------------------------------------------------------------------- |
 | Reference engine     | Rust crate implementing the spec — 50 unit tests, LaTeX report 50/50  |
-| Application          | Next.js API + `/console` UI over a TypeScript domain core — 25 tests  |
+| Application          | Next.js API + a SaaS `/console` (login, dashboard, tabs) over a TS core |
 | AI investigation     | Bounded loop backed by local Ollama, guardrails enforced in app code  |
-| GUI / regression     | Playwright GUI tests + one regression command — 5 e2e, video recorded |
+| GUI / regression     | Playwright GUI tests + one regression command — 9 e2e, video recorded |
 | Infrastructure       | `docker-compose` with the web app + Ollama                            |
 | Authentication       | Header-based demo identity; real auth remains planned                 |
 | PDF documentation    | Buildable locally with Docker                                         |
@@ -149,9 +150,14 @@ of truth. API route handlers under `apps/web/app/api/` expose the flows:
 
 The acting user is taken from `x-user-id` / `x-user-role` headers in this demo
 (a real deployment derives it from a verified session). Open the
-**[/console](http://localhost:3000/console)** page to drive the flows: switch
-roles, open disputes, advance the lifecycle, upload sample evidence, inspect the
-audit trail, and run an investigation.
+**[/console](http://localhost:3000/console)** page for the full SaaS experience:
+a **passwordless persona sign-in** (pick a Mzansi persona — your RBAC role comes
+from who you choose, with generated avatars), an app shell with a **dashboard**
+(KPIs + charts), and tabs for **Transactions** (search, category filters,
+advisory risk badges), a **Disputes** queue and case workspace (lifecycle
+stepper, role-gated actions, evidence, bounded investigation, audit timeline),
+**Investigations** and **Evidence** registers, a full **Audit log**, and
+**Settings**. Transactions use real South African merchants.
 
 ```sh
 npm ci

@@ -6,7 +6,7 @@
     "phase1_engine": "done",
     "phase2_app": "done",
     "phase3_qa": "done",
-    "phase4_saas": "in_progress"
+    "phase4_saas": "done"
   },
   "phase3_completion_promise": "DISPUTEGUARD QA COMPLETE",
   "phase4_completion_promise": "DISPUTEGUARD SAAS COMPLETE",
@@ -40,7 +40,7 @@
     { "id": "saas-transactions-tab", "status": "done", "commit": "974ca5c" },
     { "id": "saas-disputes-workspace", "status": "done", "commit": "9cddee5" },
     { "id": "saas-aux-tabs", "status": "done", "commit": "70e85c5" },
-    { "id": "saas-showcase-docs", "status": "todo", "commit": null }
+    { "id": "saas-showcase-docs", "status": "done", "commit": "pending" }
   ],
   "iterations": []
 }
