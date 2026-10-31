@@ -41,6 +41,7 @@ commit. Newest at the bottom.
 | 16 | Landing page GUI test | `run-regression.sh` green; landing spec walks all sections, docs link, no page errors | `bac1e22` |
 | 17 | Console core GUI test | `run-regression.sh` green; lists txns, opens dispute, idempotent replay, audit shows created | `073b7aa` |
 | 18 | Console lifecycle + evidence + audit GUI test | `run-regression.sh` green; role gating, evidence upload, full analyst path to approved, stale-version 409 | `26ed371` |
+| 19 | Console investigation GUI test | `run-regression.sh` green; runs bounded investigation, asserts tool-call budget <= 3 and advisory disclaimer | `pending` |
 
 ## Completion
 

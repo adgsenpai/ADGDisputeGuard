@@ -49,5 +49,12 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     stdout: "pipe",
     stderr: "pipe",
+    env: {
+      // Force the deterministic investigation fallback so GUI tests do not
+      // depend on a background Ollama instance or a pulled model. The showcase
+      // recorder uses the real model separately.
+      OLLAMA_BASE_URL: process.env.E2E_OLLAMA_BASE_URL ?? "http://127.0.0.1:9",
+      OLLAMA_TIMEOUT_MS: "1000",
+    },
   },
 });
