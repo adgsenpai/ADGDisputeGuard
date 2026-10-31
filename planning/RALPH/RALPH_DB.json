@@ -36,7 +36,7 @@
     { "id": "saas-design-sa-data", "status": "done", "commit": "14255b5" },
     { "id": "saas-login-identity", "status": "done", "commit": "640a801" },
     { "id": "saas-shell-nav", "status": "done", "commit": "618a605" },
-    { "id": "saas-dashboard", "status": "done", "commit": "pending" },
+    { "id": "saas-dashboard", "status": "done", "commit": "7f0864b" },
     { "id": "saas-transactions-tab", "status": "todo", "commit": null },
     { "id": "saas-disputes-workspace", "status": "todo", "commit": null },
     { "id": "saas-aux-tabs", "status": "todo", "commit": null },
