@@ -5,7 +5,7 @@
 </p>
 
 ![Project status](https://img.shields.io/badge/status-engine%20%2B%20app%20%2B%20infra-blue)
-![Tests](https://img.shields.io/badge/tests-50%20Rust%20%7C%2025%20TS-brightgreen)
+![Tests](https://img.shields.io/badge/tests-50%20Rust%20%7C%2025%20TS%20%7C%205%20GUI-brightgreen)
 ![AI](https://img.shields.io/badge/investigation-Ollama%20(bounded)-6f42c1)
 ![Documentation](https://img.shields.io/badge/docs-LaTeX%20%7C%20PDF-orange)
 ![Build](https://img.shields.io/badge/PDF%20build-Docker-2496ED?logo=docker&logoColor=white)
@@ -29,6 +29,22 @@ move real money — but the dispute flows (ownership, idempotent creation,
 authorised transitions, evidence validation, audit trail, advisory risk, and a
 bounded investigation) are implemented and tested end to end.
 
+## Showcase
+
+A narrated walkthrough of the landing page and the working `/console`: open a
+dispute, drive the role-gated lifecycle, upload evidence, run the bounded AI
+investigation, and read the audit trail. Recorded automatically by
+[`testing/record-showcase.mjs`](testing/record-showcase.mjs).
+
+<p align="center">
+  <img src="testing/media/gifs/showcase.gif" alt="DisputeGuard end-to-end walkthrough" width="900">
+</p>
+
+> ▶️ **[Watch the full-quality MP4](testing/media/videos/showcase.mp4)** · per-flow clips:
+> [landing](testing/media/gifs/landing.gif) ·
+> [dispute lifecycle](testing/media/gifs/dispute-lifecycle.gif) ·
+> [bounded investigation](testing/media/gifs/investigation.gif)
+
 ## Brand graphics
 
 | Asset                                                     | Preview                        | Intended use                                 |
@@ -43,6 +59,7 @@ bounded investigation) are implemented and tested end to end.
 | Reference engine     | Rust crate implementing the spec — 50 unit tests, LaTeX report 50/50  |
 | Application          | Next.js API + `/console` UI over a TypeScript domain core — 25 tests  |
 | AI investigation     | Bounded loop backed by local Ollama, guardrails enforced in app code  |
+| GUI / regression     | Playwright GUI tests + one regression command — 5 e2e, video recorded |
 | Infrastructure       | `docker-compose` with the web app + Ollama                            |
 | Authentication       | Header-based demo identity; real auth remains planned                 |
 | PDF documentation    | Buildable locally with Docker                                         |
@@ -142,6 +159,27 @@ npm test          # 25 node:test cases for the domain core, API handlers and inv
 npm run dev       # then open http://localhost:3000/console
 ```
 
+## Regression & GUI testing
+
+One command runs every suite — the Rust engine tests + LaTeX report, the
+TypeScript unit tests, and the Playwright GUI tests — and fails if any fails:
+
+```sh
+bash testing/run-regression.sh
+```
+
+The GUI tests drive the real app in Chrome (open a dispute, drive the
+role-gated lifecycle, upload evidence, run the bounded investigation, read the
+audit trail) and record a video of every flow. See
+[`testing/README.md`](testing/README.md) for the layout, how to run individual
+specs, and how to re-record the showcase.
+
+| Suite       | Command                                            | Coverage                         |
+| ----------- | -------------------------------------------------- | -------------------------------- |
+| Rust engine | `cd engine && ./run-tests.sh`                      | 50 unit tests, report 50/50       |
+| App unit    | `npm test` (in `apps/web`)                         | 25 `node:test` cases              |
+| GUI / e2e   | `playwright test --config testing/e2e/...`         | 5 browser tests, video recorded   |
+
 ## Run the full stack (app + Ollama)
 
 ```sh
@@ -156,10 +194,11 @@ deterministic proposer when Ollama is unreachable.
 
 ## Ralph loop
 
-Phase 2 of this project was executed as a [Ralph loop](planning/RALPH/RALPH_LOOP.md):
+Phases 2 and 3 of this project were executed as a [Ralph loop](planning/RALPH/RALPH_LOOP.md):
 each backlog item is implemented with tests, verified, logged in
 [`RALPH_LOG.md`](planning/RALPH/RALPH_LOG.md) with its commit, and pushed. The
-loop's plan and progress live in `planning/RALPH/`.
+loop's plan and progress live in `planning/RALPH/`. Phase 3 added the regression
+command, the Playwright GUI tests, and the showcase video above.
 
 Document copies served by the website live in `apps/web/public/documents`.
 Refresh those copies when the source PDFs in `planning/Software Spec/pdf-outputs`

@@ -43,10 +43,13 @@ commit. Newest at the bottom.
 | 18 | Console lifecycle + evidence + audit GUI test | `run-regression.sh` green; role gating, evidence upload, full analyst path to approved, stale-version 409 | `26ed371` |
 | 19 | Console investigation GUI test | `run-regression.sh` green; runs bounded investigation, asserts tool-call budget <= 3 and advisory disclaimer | `dfeb181` |
 | 20 | Showcase video + per-flow GIFs | `run-regression.sh` green; `record-showcase.mjs` produced showcase.mp4 (26s, 1.2 MB) + showcase.gif (3 MB) + 3 per-flow GIFs | `5c2b64b` |
+| 21 | README showcase + testing docs | `run-regression.sh` green; showcase GIF embedded + MP4 linked in README, `testing/README.md` added | `pending` |
+
+**Phase 3 result:** QA green — single regression command runs 50 Rust + 50/50
+report, 25 TS, and 5 Playwright GUI tests; showcase video recorded and embedded.
 
 ## Completion
 
-All backlog items (Phase 1 + Phase 2) are done and both test suites are green.
-Promise emitted: `DISPUTEGUARD ENGINE COMPLETE`.
-
-Phase 3 in progress; completion promise `DISPUTEGUARD QA COMPLETE`.
+All backlog items (Phase 1 + Phase 2 + Phase 3) are done and every suite is green.
+Promises emitted: `DISPUTEGUARD ENGINE COMPLETE` (Phase 1+2),
+`DISPUTEGUARD QA COMPLETE` (Phase 3).

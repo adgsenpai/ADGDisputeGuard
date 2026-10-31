@@ -5,7 +5,7 @@
   "phases": {
     "phase1_engine": "done",
     "phase2_app": "done",
-    "phase3_qa": "in_progress"
+    "phase3_qa": "done"
   },
   "phase3_completion_promise": "DISPUTEGUARD QA COMPLETE",
   "items": [
@@ -30,7 +30,7 @@
     { "id": "gui-console-lifecycle", "status": "done", "commit": "26ed371" },
     { "id": "gui-console-investigate", "status": "done", "commit": "dfeb181" },
     { "id": "showcase-video", "status": "done", "commit": "5c2b64b" },
-    { "id": "readme-showcase-docs", "status": "todo", "commit": null }
+    { "id": "readme-showcase-docs", "status": "done", "commit": "pending" }
   ],
   "iterations": []
 }
