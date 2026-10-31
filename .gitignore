@@ -23,3 +23,10 @@ engine/report/build*.log
 
 # Ralph loop local state
 .claude/ralph-loop.local.md
+
+# Playwright / GUI test run artifacts (curated media under testing/media/{videos,gifs} is kept)
+testing/media/test-results/
+testing/media/playwright-report/
+test-results/
+playwright-report/
+.playwright/

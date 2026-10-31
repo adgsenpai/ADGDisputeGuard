@@ -4,8 +4,10 @@
   "source_of_truth": "planning/Software Spec/equations.tex",
   "phases": {
     "phase1_engine": "done",
-    "phase2_app": "done"
+    "phase2_app": "done",
+    "phase3_qa": "in_progress"
   },
+  "phase3_completion_promise": "DISPUTEGUARD QA COMPLETE",
   "items": [
     { "id": "scaffold", "status": "done", "commit": "19e806a" },
     { "id": "signal-normalisation", "status": "done", "commit": "d2e16df" },
@@ -21,7 +23,14 @@
     { "id": "ollama-investigation", "status": "done", "commit": "48b124d" },
     { "id": "app-ui", "status": "done", "commit": "89a118d" },
     { "id": "infra-docker-ollama", "status": "done", "commit": "2a37930" },
-    { "id": "phase2-report-docs", "status": "done", "commit": "4741462" }
+    { "id": "phase2-report-docs", "status": "done", "commit": "4741462" },
+    { "id": "regression-harness", "status": "done", "commit": "pending" },
+    { "id": "gui-landing", "status": "todo", "commit": null },
+    { "id": "gui-console-core", "status": "todo", "commit": null },
+    { "id": "gui-console-lifecycle", "status": "todo", "commit": null },
+    { "id": "gui-console-investigate", "status": "todo", "commit": null },
+    { "id": "showcase-video", "status": "todo", "commit": null },
+    { "id": "readme-showcase-docs", "status": "todo", "commit": null }
   ],
   "iterations": []
 }

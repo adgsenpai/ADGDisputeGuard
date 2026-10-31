@@ -33,7 +33,15 @@ commit. Newest at the bottom.
 
 **Phase 2 result:** app green — 25 TS tests, `next build` passes, docker-compose stack with Ollama.
 
+## Phase 3 — Regression + GUI testing + showcase video
+
+| # | Item | Verification | Commit |
+|---|------|--------------|--------|
+| 15 | Regression harness + Playwright config + landing smoke | `run-regression.sh` green: 50 Rust + 50/50 report, 25 TS, 1 e2e | `pending` |
+
 ## Completion
 
 All backlog items (Phase 1 + Phase 2) are done and both test suites are green.
 Promise emitted: `DISPUTEGUARD ENGINE COMPLETE`.
+
+Phase 3 in progress; completion promise `DISPUTEGUARD QA COMPLETE`.

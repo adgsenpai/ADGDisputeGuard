@@ -51,9 +51,35 @@ with tests, all tests green, and the LaTeX report regenerated.
 - [x] **Infrastructure**: `infra/docker-compose.yml` with the web app + an Ollama service, a web `Dockerfile`, `.env.example`, a model pull/bootstrap script, and README docs for running it.
 - [x] **Phase 2 report/docs**: update README and (if useful) the LaTeX report to describe the app + infra; confirm `npm test` and `./run-tests.sh` are both green.
 
+### Phase 3 — Regression + GUI testing + showcase video
+
+Adds an end-to-end quality layer: a single regression command that runs every
+suite, automated GUI (browser) tests that drive the real app and record video,
+and a showcase video embedded in the README. GUI tests use Playwright driving
+the system Chrome; recordings are converted to MP4/GIF with ffmpeg.
+
+Per-item protocol for this phase:
+
+1. Implement the item under `testing/` (or wire scripts / README).
+2. Run `bash testing/run-regression.sh` — **all** suites must pass
+   (Rust tests + LaTeX report 0 failed checks, TS unit tests, Playwright e2e).
+3. Check the item off, append a row to `RALPH_LOG.md`, commit and push (one
+   commit per item, no attribution lines).
+
+- [x] **Regression harness**: `testing/run-regression.sh` runs the Rust tests + LaTeX report, the TS `npm test`, and the Playwright e2e suite, failing if any suite fails; Playwright config (system Chrome, video on, auto-starts the app); `.gitignore` for raw run artifacts (keep curated media). Landing smoke spec green.
+- [ ] **Landing page GUI test**: `testing/e2e/landing.spec.ts` — page renders hero + core sections, WebGL shield or SVG fallback present, no uncaught page errors; video recorded.
+- [ ] **Console core GUI test**: `testing/e2e/console-core.spec.ts` — switch role, list transactions, open a dispute (ownership/idempotency), see it in the dispute list.
+- [ ] **Console lifecycle + evidence + audit GUI test**: `testing/e2e/console-lifecycle.spec.ts` — role-gated lifecycle transition, evidence upload validation, audit trail reflects the changes.
+- [ ] **Console investigation GUI test**: `testing/e2e/console-investigate.spec.ts` — run the bounded investigation from the UI, see the result and that the budget/allowlist bounds hold.
+- [ ] **Showcase video**: `testing/record-showcase.mjs` drives a narrated end-to-end walkthrough, records it, and ffmpeg produces an optimised `testing/media/videos/showcase.mp4` and `testing/media/gifs/showcase.gif` (plus per-flow GIFs from the spec videos), committed.
+- [ ] **README showcase + testing docs**: embed the showcase GIF (and link the MP4) in `README.md`, document regression + GUI testing, and add `testing/README.md`; confirm `testing/run-regression.sh` is green.
+
 ## State
 
 - Loop owner: autonomous session
 - Source of truth for scope: `planning/Software Spec/equations.tex` (+ `engine/` reference implementation)
-- Completion promise: `DISPUTEGUARD ENGINE COMPLETE`
-- Note: the promise now means **all** backlog items (Phase 1 + Phase 2) are done and all test suites are green.
+- Phase 1 + Phase 2 completion promise (met): `DISPUTEGUARD ENGINE COMPLETE`
+- Phase 3 completion promise: `DISPUTEGUARD QA COMPLETE`
+- Note: the Phase 3 promise means every Phase 3 backlog item is done and
+  `testing/run-regression.sh` passes (all suites green, showcase media produced
+  and embedded in the README).
