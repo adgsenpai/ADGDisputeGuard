@@ -39,6 +39,16 @@ export function isActive(state: State): boolean {
   return state !== "approved" && state !== "rejected";
 }
 
+export const EVENTS: readonly Event[] = [
+  "begin_review", "request_evidence", "evidence_submitted",
+  "begin_investigation", "approve", "reject", "issue_refund",
+];
+
+// Share the server's lifecycle and role rules with clients presenting actions.
+export function availableEvents(state: State, role: Role): Event[] {
+  return EVENTS.filter(event => actorMayPerform(role, event) && transition(state, event) !== null);
+}
+
 // Whether an actor's role may perform an event. Review-driving events are
 // analyst/admin only; a customer may only submit evidence.
 export function actorMayPerform(role: Role, event: Event): boolean {

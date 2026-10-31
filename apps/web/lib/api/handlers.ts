@@ -4,7 +4,7 @@
 
 import type { DisputeStore, AuditEvent } from "../domain/service";
 import type { User } from "../domain/access";
-import type { Event } from "../domain/lifecycle";
+import { EVENTS, availableEvents, type Event } from "../domain/lifecycle";
 import {
   receiveEvidence,
   demoPolicy,
@@ -90,16 +90,6 @@ export function listDisputes(store: DisputeStore): ApiResult {
   return { status: 200, body: { disputes: store.allDisputes() } };
 }
 
-const VALID_EVENTS: Event[] = [
-  "begin_review",
-  "request_evidence",
-  "evidence_submitted",
-  "begin_investigation",
-  "approve",
-  "reject",
-  "issue_refund",
-];
-
 export function transitionDispute(
   store: DisputeStore,
   actor: User,
@@ -108,7 +98,7 @@ export function transitionDispute(
 ): ApiResult {
   const event = body.event as Event;
   const expectedVersion = Number(body.expectedVersion);
-  if (!VALID_EVENTS.includes(event) || !Number.isInteger(expectedVersion)) {
+  if (!EVENTS.includes(event) || !Number.isInteger(expectedVersion)) {
     return { status: 400, body: { error: "event and expectedVersion are required" } };
   }
   const result = store.transitionDispute(actor, id, event, expectedVersion);
@@ -117,8 +107,18 @@ export function transitionDispute(
     if (result.kind === "not-authorised") return { status: 403, body: { error: result.kind } };
     // Transition errors: version conflict is 409, invalid transition 422.
     const t = result.error;
-    const status = t.kind === "version-conflict" ? 409 : 422;
-    return { status, body: { error: t.kind, detail: t } };
+    if (t.kind === "version-conflict") {
+      return { status: 409, body: { error: t.kind, detail: t, message: "This case has changed. Refresh it before choosing the next action." } };
+    }
+    const actions = availableEvents(t.from, actor.role);
+    const readable = (value: string) => value.replace(/_/g, " ");
+    const next = actions.length
+      ? `Available actions: ${actions.map(readable).join(", ")}.`
+      : "No further actions are available for your role in this state.";
+    return { status: 422, body: {
+      error: t.kind, detail: t, availableEvents: actions,
+      message: `Cannot ${readable(event)} while this case is ${readable(t.from)}. ${next}`,
+    } };
   }
   return { status: 200, body: { dispute: result } };
 }

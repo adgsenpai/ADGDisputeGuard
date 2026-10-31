@@ -9,7 +9,6 @@ import {
   applyTransition,
   isActive,
   isTransitionError,
-  transition,
   type Dispute,
   type Event,
   type State,
@@ -175,9 +174,6 @@ export class DisputeStore {
     if (!dispute) return { kind: "unknown-dispute" };
     if (!actorMayPerform(actor.role, event)) return { kind: "not-authorised" };
     const from = dispute.state;
-    if (transition(from, event) === null) {
-      return { kind: "transition", error: { kind: "invalid-transition", from, event } };
-    }
     const updated = applyTransition(dispute, event, expectedVersion);
     if (isTransitionError(updated)) return { kind: "transition", error: updated };
     this.disputes.set(disputeId, updated);

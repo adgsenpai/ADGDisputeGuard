@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import "./console.css";
 import Avatar from "@/components/avatar";
+import { availableEvents, type State, type Event } from "@/lib/domain/lifecycle";
 import Login from "@/components/console/login";
 import Shell, { NAV, type ViewKey } from "@/components/console/shell";
 import { HBars, type Bar } from "@/components/console/charts";
@@ -28,13 +29,12 @@ const STATE_COLOR: Record<string, string> = {
 };
 
 type Txn = { id: number; ownerId?: number; merchant: string; category: string; amountMinor: number; reason: string };
-type Dispute = { id: number; transactionId: number; state: string; version: number };
+type Dispute = { id: number; transactionId: number; state: State; version: number };
 type AuditEvent = { seq: number; disputeId?: number; actorId: number; detail: { kind: string; from?: string; to?: string; event?: string; state?: string } };
 type Investigation = { usedModel: boolean; summary: string; stage: string; observations: number; toolCalls: number; history: string[] };
 type EvidenceRec = { seq: number; disputeId: number; actorId: number; storageName: string; sizeBytes: number; detectedType: string };
 type InvRec = { seq: number; disputeId: number; usedModel: boolean; summary: string; stage: string; observations: number; toolCalls: number };
 
-const ANALYST_EVENTS = ["begin_review", "request_evidence", "begin_investigation", "approve", "reject"];
 const ACTIVE = (s: string) => s !== "approved" && s !== "rejected";
 
 function zar(amountMinor: number) {
@@ -168,6 +168,7 @@ function ConsoleApp({
       const data = await res.json();
       setEvents(data.events ?? []);
       setMeta(data.meta ?? null);
+      if (data.dispute) setDisputes(current => current.map(dispute => dispute.id === id ? data.dispute : dispute));
     },
     [headers],
   );
@@ -208,8 +209,12 @@ function ConsoleApp({
       setBusy(false);
     }
   }
-  async function doTransition(event: string) {
-    if (!selectedDispute) return;
+  async function doTransition(event: Event) {
+    if (!selectedDispute || busy) return;
+    if (!availableEvents(selectedDispute.state, identity.role).includes(event)) {
+      flash("err", `This action is unavailable while the case is ${nice(selectedDispute.state)}.`);
+      return;
+    }
     setBusy(true);
     try {
       const res = await fetch(`/api/disputes/${selectedDispute.id}/transition`, {
@@ -218,9 +223,11 @@ function ConsoleApp({
         body: JSON.stringify({ event, expectedVersion: selectedDispute.version }),
       });
       const data = await res.json();
-      if (!res.ok) flash("err", `Transition refused: ${data.error}`);
+      if (!res.ok) flash("err", data.message ?? `Transition refused: ${data.error}`);
       else flash("ok", `Moved to ${data.dispute.state}.`);
       await Promise.all([loadDisputes(), loadDetail(selectedDispute.id), loadAudit()]);
+    } catch {
+      flash("err", "Could not confirm the case update. Check your connection and refresh the case before trying again.");
     } finally {
       setBusy(false);
     }
@@ -330,7 +337,7 @@ type Shared = {
   busy: boolean;
   canActAsStaff: boolean;
   openDispute: (t: Txn) => void;
-  doTransition: (e: string) => void;
+  doTransition: (e: Event) => void;
   submitEvidence: () => void;
   runInvestigation: () => void;
   inspect: (id: number) => void;
@@ -652,6 +659,7 @@ async function downloadReport(id: number, identity: Identity) {
 }
 
 function CaseWorkspace({ s, dispute }: { s: Shared; dispute: Dispute }) {
+  const actions = availableEvents(dispute.state, s.identity.role);
   const tx = s.txnById.get(dispute.transactionId);
   return (
     <>
@@ -672,22 +680,19 @@ function CaseWorkspace({ s, dispute }: { s: Shared; dispute: Dispute }) {
 
       {s.meta && <ReasonCodePanel meta={s.meta} state={dispute.state} amountMinor={tx?.amountMinor ?? 0} />}
 
-      <div className="btnrow">
-        {s.canActAsStaff ? (
-          ANALYST_EVENTS.map((ev) => (
-            <button key={ev} className="btn btn--ghost" disabled={s.busy} onClick={() => s.doTransition(ev)}>
-              {nice(ev)}
-            </button>
-          ))
-        ) : (
-          <button className="btn btn--ghost" disabled={s.busy} onClick={() => s.doTransition("evidence_submitted")}>
-            evidence submitted
+      <div className="btnrow" aria-label="Available case actions">
+        {actions.map(event => (
+          <button key={event} className="btn btn--ghost" disabled={s.busy} onClick={() => s.doTransition(event)}>
+            {nice(event)}
           </button>
-        )}
+        ))}
       </div>
       <div className="note">
-        Transitions are role-gated and version-checked by the server. A customer can only submit evidence; sign in as an Analyst to
-        drive the review. The server rejects invalid or stale changes.
+        {actions.length > 0
+          ? "These actions are available for your role and the current case state. Each update is checked by the server."
+          : !ACTIVE(dispute.state)
+            ? "This case is closed. No further state changes are available."
+            : "This case is awaiting an analyst’s next action. You can still attach supporting evidence."}
       </div>
 
       <div className="btnrow" style={{ marginTop: 16 }}>
