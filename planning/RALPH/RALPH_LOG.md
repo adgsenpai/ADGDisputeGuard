@@ -70,7 +70,7 @@ South African data; 27 TS + 9 Playwright GUI tests green, showcase re-recorded.
 | # | Item | Verification | Commit |
 |---|------|--------------|--------|
 | 30 | Chargeback reason codes + SLAs | `run-regression.sh` green (30 TS, 10 GUI); Visa/MC reason-code catalogue, per-dispute code + openedAt, SLA countdown, evidence checklist, provisional credit | `29bf77e` |
-| 31 | Tamper-evident audit log | `run-regression.sh` green (34 TS, 10 GUI); SHA-256 hash-chained audit events, `/api/audit/verify`, integrity badge; chain + tamper-detection unit tests | `pending` |
+| 31 | Tamper-evident audit log | `run-regression.sh` green (34 TS, 10 GUI); SHA-256 hash-chained audit events, `/api/audit/verify`, integrity badge; chain + tamper-detection unit tests | `1035568` |
 
 ## Completion
 
