@@ -387,18 +387,59 @@ function Dashboard(s: Shared) {
 }
 
 /* ---------------- Transactions ---------------- */
+function RiskChip({ amountMinor }: { amountMinor: number }) {
+  const score = advisoryScore(amountMinor);
+  if (score === null) return null;
+  const band = riskBand(score);
+  return <span className={`riskchip riskchip--${band}`}>{band} risk · {Math.round(score * 100)}%</span>;
+}
+
 function TransactionsView(s: Shared) {
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState<string | null>(null);
+
+  const categories = useMemo(
+    () => [...new Set(s.txns.map((t) => t.category))].sort(),
+    [s.txns],
+  );
+  const q = query.trim().toLowerCase();
+  const rows = s.txns.filter((t) => {
+    if (category && t.category !== category) return false;
+    if (!q) return true;
+    return `${t.merchant} ${t.category} ${t.reason}`.toLowerCase().includes(q);
+  });
+
   return (
     <section className="card">
-      <div className="card__title">Transactions</div>
-      {s.txns.length === 0 && <div className="empty">No transactions visible for this role.</div>}
+      <div className="toolbar">
+        <div className="searchfield">
+          <input
+            type="text"
+            placeholder="Search transactions…"
+            aria-label="Search transactions"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <div className="chips">
+          <button className={`chip ${category === null ? "chip--on" : ""}`} onClick={() => setCategory(null)}>All</button>
+          {categories.map((c) => (
+            <button key={c} className={`chip ${category === c ? "chip--on" : ""}`} onClick={() => setCategory(c)}>
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {rows.length === 0 && <div className="empty">No matching transactions.</div>}
       <div className="table">
-        {s.txns.map((tx) => (
-          <div className="trow" key={tx.id}>
+        {rows.map((tx) => (
+          <div className="trow trow--tx" key={tx.id}>
             <div className="trow__merch">
               <div className="trow__name">{tx.merchant}</div>
               <div className="trow__meta">{tx.category} · {tx.reason}</div>
             </div>
+            <RiskChip amountMinor={tx.amountMinor} />
             <div className="trow__amount">{zar(tx.amountMinor)}</div>
             <button className="btn" disabled={s.busy} onClick={() => s.openDispute(tx)}>
               Open dispute

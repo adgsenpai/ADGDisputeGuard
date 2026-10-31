@@ -163,9 +163,34 @@
 .quick { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
 .quick .btn { width: 100%; text-align: left; }
 
+/* ---------------- Toolbar + chips ---------------- */
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 14px; }
+.searchfield { flex: 1; min-width: 180px; }
+.searchfield input {
+  width: 100%; font: inherit; font-size: 14px; color: var(--dg-text);
+  background: var(--dg-bg-2); border: 1px solid var(--dg-border); border-radius: var(--dg-r-sm);
+  padding: 9px 13px;
+}
+.searchfield input::placeholder { color: var(--dg-text-dim); }
+.searchfield input:focus-visible { outline: 2px solid var(--dg-accent); outline-offset: 1px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  padding: 6px 12px; border-radius: 999px; color: var(--dg-text-soft);
+  background: var(--dg-surface-2); border: 1px solid var(--dg-border);
+}
+.chip:hover { background: var(--dg-surface-3); color: var(--dg-text); }
+.chip--on { background: var(--dg-accent); color: var(--dg-accent-ink); border-color: var(--dg-accent); }
+
+.riskchip { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; text-transform: capitalize; white-space: nowrap; }
+.riskchip--low { color: var(--dg-success); background: rgba(52, 211, 153, 0.12); border: 1px solid rgba(52, 211, 153, 0.3); }
+.riskchip--medium { color: var(--dg-warning); background: rgba(251, 191, 36, 0.12); border: 1px solid rgba(251, 191, 36, 0.3); }
+.riskchip--high { color: var(--dg-danger); background: rgba(251, 113, 133, 0.12); border: 1px solid rgba(251, 113, 133, 0.3); }
+
 /* ---------------- Tables ---------------- */
 .table { display: flex; flex-direction: column; }
 .trow { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 14px; padding: 13px 4px; border-bottom: 1px solid var(--dg-border-soft); }
+.trow--tx { grid-template-columns: 1fr auto auto auto; }
 .trow:last-child { border-bottom: 0; }
 .trow--active { background: var(--dg-surface-2); border-radius: var(--dg-r-sm); }
 .trow__name { font-weight: 700; font-size: 14px; }
