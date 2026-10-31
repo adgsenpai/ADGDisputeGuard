@@ -79,6 +79,7 @@ function ConsoleApp({ identity, onSignOut }: { identity: Identity; onSignOut: ()
   const [txns, setTxns] = useState<Txn[]>([]);
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [allEvents, setAllEvents] = useState<AuditEvent[]>([]);
+  const [auditVerify, setAuditVerify] = useState<{ valid: boolean; length: number; head: string; brokenAt?: number } | null>(null);
   const [evidenceLog, setEvidenceLog] = useState<EvidenceRec[]>([]);
   const [investigationsLog, setInvestigationsLog] = useState<InvRec[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
@@ -122,6 +123,12 @@ function ConsoleApp({ identity, onSignOut }: { identity: Identity; onSignOut: ()
   const loadAudit = useCallback(async () => {
     const res = await fetch("/api/audit", { headers });
     setAllEvents((await res.json()).events ?? []);
+    try {
+      const v = await (await fetch("/api/audit/verify", { headers })).json();
+      setAuditVerify(v);
+    } catch {
+      setAuditVerify(null);
+    }
   }, [headers]);
   const loadEvidence = useCallback(async () => {
     const res = await fetch("/api/evidence", { headers });
@@ -246,6 +253,7 @@ function ConsoleApp({ identity, onSignOut }: { identity: Identity; onSignOut: ()
     txns,
     disputes,
     allEvents,
+    auditVerify,
     evidenceLog,
     investigationsLog,
     events,
@@ -284,6 +292,7 @@ type Shared = {
   txns: Txn[];
   disputes: Dispute[];
   allEvents: AuditEvent[];
+  auditVerify: { valid: boolean; length: number; head: string; brokenAt?: number } | null;
   evidenceLog: EvidenceRec[];
   investigationsLog: InvRec[];
   events: AuditEvent[];
@@ -762,6 +771,17 @@ function AuditView(s: Shared) {
   return (
     <section className="card">
       <div className="card__title">Audit log</div>
+      {s.auditVerify && (
+        <div className={`integrity ${s.auditVerify.valid ? "integrity--ok" : "integrity--bad"}`}>
+          <span className="integrity__mark">{s.auditVerify.valid ? "✓" : "⚠"}</span>
+          {s.auditVerify.valid
+            ? `Integrity verified — hash chain intact`
+            : `Tamper detected at event #${s.auditVerify.brokenAt}`}
+          <span className="integrity__meta mono">
+            {s.auditVerify.length} events · SHA-256 head {s.auditVerify.head.slice(0, 12)}…
+          </span>
+        </div>
+      )}
       {rows.length === 0 && <div className="empty">No audit events yet.</div>}
       <ul className="trail trail--full">
         {rows.map((e) => (

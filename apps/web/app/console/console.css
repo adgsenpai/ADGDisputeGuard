@@ -206,6 +206,13 @@
 .step--done { color: var(--dg-text-soft); }
 .step--current .step__label { color: var(--dg-text); font-weight: 800; }
 
+/* ---------------- Audit integrity ---------------- */
+.integrity { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 10px 14px; border-radius: var(--dg-r); font-size: 13px; font-weight: 600; margin-bottom: 14px; }
+.integrity--ok { color: var(--dg-success); background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.35); }
+.integrity--bad { color: var(--dg-danger); background: rgba(251, 113, 133, 0.1); border: 1px solid rgba(251, 113, 133, 0.35); }
+.integrity__mark { font-weight: 800; font-size: 15px; }
+.integrity__meta { margin-left: auto; color: var(--dg-text-dim); font-weight: 500; }
+
 /* ---------------- Reason code + SLA ---------------- */
 .reasonbox { margin-top: 14px; padding: 14px; background: var(--dg-bg-2); border: 1px solid var(--dg-border); border-radius: var(--dg-r); }
 .reasonbox__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }

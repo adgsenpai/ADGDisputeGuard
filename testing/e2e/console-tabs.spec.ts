@@ -30,6 +30,9 @@ test.describe("console — aux tabs", () => {
     await goTo(page, "audit");
     await expect(page.locator(".card__title", { hasText: "Audit log" })).toBeVisible();
     await expect(page.locator(".trail--full li").first()).toBeVisible();
+    // Tamper-evident hash chain verifies.
+    await expect(page.locator(".integrity--ok")).toBeVisible();
+    await expect(page.locator(".integrity--ok")).toContainText(/Integrity verified/i);
 
     await goTo(page, "settings");
     await expect(page.locator(".card__title", { hasText: "Your profile" })).toBeVisible();

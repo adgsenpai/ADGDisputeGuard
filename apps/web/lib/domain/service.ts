@@ -15,6 +15,7 @@ import {
   type State,
   type TransitionError,
 } from "./lifecycle";
+import { linkHash, verifyChain, GENESIS, type VerifyResult } from "../hashchain";
 
 export type AuditKind =
   | { kind: "dispute-created"; state: State }
@@ -25,6 +26,8 @@ export type AuditEvent = {
   disputeId: number;
   actorId: number;
   detail: AuditKind;
+  prevHash: string;
+  hash: string;
 };
 
 export type CreateError =
@@ -124,7 +127,14 @@ export class DisputeStore {
   }
 
   private append(disputeId: number, actorId: number, detail: AuditKind): void {
-    this.auditLog.push({ seq: this.nextSeq++, disputeId, actorId, detail });
+    const seq = this.nextSeq++;
+    const prevHash = this.auditLog.length ? this.auditLog[this.auditLog.length - 1].hash : GENESIS;
+    const hash = linkHash(prevHash, { seq, disputeId, actorId, detail });
+    this.auditLog.push({ seq, disputeId, actorId, detail, prevHash, hash });
+  }
+
+  verifyAuditChain(): VerifyResult {
+    return verifyChain(this.auditLog);
   }
 
   createDispute(

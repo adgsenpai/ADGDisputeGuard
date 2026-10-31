@@ -179,6 +179,11 @@ function scopedByDispute<T extends { disputeId: number }>(
   return all.filter((r) => mine.has(r.disputeId));
 }
 
+// Recompute and verify the audit hash chain.
+export function verifyAudit(store: DisputeStore): ApiResult {
+  return { status: 200, body: store.verifyAuditChain() };
+}
+
 export function listEvidence(
   store: DisputeStore,
   user: User,
