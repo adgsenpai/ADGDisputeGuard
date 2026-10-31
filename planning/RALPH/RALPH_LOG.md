@@ -69,7 +69,7 @@ South African data; 27 TS + 9 Playwright GUI tests green, showcase re-recorded.
 
 | # | Item | Verification | Commit |
 |---|------|--------------|--------|
-| 30 | Chargeback reason codes + SLAs | `run-regression.sh` green (30 TS, 10 GUI); Visa/MC reason-code catalogue, per-dispute code + openedAt, SLA countdown, evidence checklist, provisional credit | `pending` |
+| 30 | Chargeback reason codes + SLAs | `run-regression.sh` green (30 TS, 10 GUI); Visa/MC reason-code catalogue, per-dispute code + openedAt, SLA countdown, evidence checklist, provisional credit | `29bf77e` |
 
 ## Completion
 
