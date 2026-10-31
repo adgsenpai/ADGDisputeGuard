@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { signIn, PERSONA } from "./helpers";
 
 /**
  * Console investigation GUI flow: run the bounded, Ollama-backed investigation
@@ -12,7 +13,7 @@ test.describe("console — bounded investigation", () => {
     const pageErrors: string[] = [];
     page.on("pageerror", (err) => pageErrors.push(err.message));
 
-    await page.goto("/console", { waitUntil: "domcontentloaded" });
+    await signIn(page, PERSONA.customer);
 
     // Open a dispute on the Mr Price transaction and inspect it.
     const studio = page.locator(".row", { hasText: "Mr Price" });

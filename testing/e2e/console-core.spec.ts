@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { signIn, PERSONA } from "./helpers";
 
 /**
  * Console core GUI flow: the acting user lists their transactions, opens a
@@ -12,11 +13,9 @@ test.describe("console — transactions and dispute creation", () => {
     const pageErrors: string[] = [];
     page.on("pageerror", (err) => pageErrors.push(err.message));
 
-    await page.goto("/console", { waitUntil: "domcontentloaded" });
-
-    // Console header + default role is the customer.
-    await expect(page.getByText("DisputeGuard Console")).toBeVisible();
-    await expect(page.locator("#role")).toHaveValue("1");
+    // Sign in (passwordless) as the customer persona.
+    await signIn(page, PERSONA.customer);
+    await expect(page.locator(".rolepill--customer")).toBeVisible();
 
     // The customer's seeded transactions are listed.
     const openButtons = page.getByRole("button", { name: "Open dispute" });

@@ -2,6 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import "./console.css";
+import Avatar from "@/components/avatar";
+import Login from "@/components/console/login";
+import {
+  loadIdentity,
+  clearIdentity,
+  authHeaders,
+  type Identity,
+} from "@/lib/identity";
+import { ROLE_LABELS } from "@/lib/personas";
 
 type Txn = {
   id: number;
@@ -13,12 +22,6 @@ type Txn = {
 type Dispute = { id: number; transactionId: number; state: string; version: number };
 type AuditEvent = { seq: number; actorId: number; detail: { kind: string; from?: string; to?: string; event?: string; state?: string } };
 type Investigation = { usedModel: boolean; summary: string; stage: string; observations: number; toolCalls: number; history: string[] };
-
-const USERS = [
-  { id: "1", role: "customer", label: "Customer (you)" },
-  { id: "9", role: "analyst", label: "Analyst" },
-  { id: "99", role: "admin", label: "Admin" },
-];
 
 const ANALYST_EVENTS = ["begin_review", "request_evidence", "begin_investigation", "approve", "reject"];
 
@@ -33,7 +36,30 @@ function stateBadgeClass(state: string) {
 }
 
 export default function ConsolePage() {
-  const [userId, setUserId] = useState("1");
+  const [identity, setIdentity] = useState<Identity | null>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    setIdentity(loadIdentity());
+    setReady(true);
+  }, []);
+
+  if (!ready) return <main className="console console--loading" aria-busy="true" />;
+  if (!identity) return <Login onSignedIn={setIdentity} />;
+
+  return (
+    <ConsoleApp
+      key={identity.userId}
+      identity={identity}
+      onSignOut={() => {
+        clearIdentity();
+        setIdentity(null);
+      }}
+    />
+  );
+}
+
+function ConsoleApp({ identity, onSignOut }: { identity: Identity; onSignOut: () => void }) {
   const [txns, setTxns] = useState<Txn[]>([]);
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
@@ -42,11 +68,7 @@ export default function ConsolePage() {
   const [toast, setToast] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const user = useMemo(() => USERS.find((u) => u.id === userId)!, [userId]);
-  const headers = useMemo(
-    () => ({ "content-type": "application/json", "x-user-id": user.id, "x-user-role": user.role }),
-    [user],
-  );
+  const headers = useMemo(() => authHeaders(identity), [identity]);
 
   const flash = useCallback((kind: "ok" | "err", text: string) => {
     setToast({ kind, text });
@@ -162,7 +184,7 @@ export default function ConsolePage() {
     }
   }
 
-  const canActAsStaff = user.role === "analyst" || user.role === "admin";
+  const canActAsStaff = identity.role === "analyst" || identity.role === "admin";
 
   return (
     <main className="console">
@@ -173,15 +195,18 @@ export default function ConsolePage() {
             Reference flows: ownership, idempotent creation, authorised transitions, evidence, and a bounded AI investigation.
           </div>
         </div>
-        <div className="roleswitch">
-          <label htmlFor="role">Acting as</label>
-          <select id="role" value={userId} onChange={(e) => setUserId(e.target.value)}>
-            {USERS.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.label}
-              </option>
-            ))}
-          </select>
+        <div className="whoami">
+          <Avatar seed={identity.name} initials={identity.initials} size={40} />
+          <div className="whoami__who">
+            <div className="whoami__name">{identity.name}</div>
+            <div className="whoami__role">
+              <span className={`rolepill rolepill--${identity.role}`}>{ROLE_LABELS[identity.role]}</span>
+              <span className="whoami__city">{identity.city}</span>
+            </div>
+          </div>
+          <button className="btn btn--ghost" onClick={onSignOut} aria-label="Sign out">
+            Sign out
+          </button>
         </div>
       </header>
 
@@ -262,8 +287,8 @@ export default function ConsolePage() {
                 )}
               </div>
               <div className="note">
-                Transitions are role-gated and version-checked by the server. As a customer you can only submit evidence; switch to
-                Analyst to drive the review. The server rejects invalid or stale changes.
+                Transitions are role-gated and version-checked by the server. As a customer you can only submit evidence; sign in as
+                an Analyst to drive the review. The server rejects invalid or stale changes.
               </div>
 
               <div className="btnrow" style={{ marginTop: 16 }}>
@@ -315,8 +340,8 @@ export default function ConsolePage() {
       </div>
 
       <p className="note">
-        Demonstration data and flows. Risk indicators are advisory and never decide a dispute. Back to the{" "}
-        <a href="/">landing page</a>.
+        Signed in as {identity.name} ({ROLE_LABELS[identity.role]}). Demonstration data and flows. Risk indicators are advisory and
+        never decide a dispute. Back to the <a href="/">landing page</a>.
       </p>
     </main>
   );

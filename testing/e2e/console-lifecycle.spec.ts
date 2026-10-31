@@ -1,9 +1,10 @@
 import { test, expect } from "@playwright/test";
+import { signIn, switchPersona, PERSONA } from "./helpers";
 
 /**
  * Console lifecycle GUI flow: role-gated transitions, evidence upload, and the
  * audit trail. Opens a dispute as the customer, shows that the customer may
- * only submit evidence, then switches to the analyst and drives the dispute
+ * only submit evidence, then signs in as the analyst and drives the dispute
  * through the authorised state machine to approval, checking the state badge
  * and audit trail at each step.
  *
@@ -19,9 +20,8 @@ test.describe("console — lifecycle, evidence and audit", () => {
     const pageErrors: string[] = [];
     page.on("pageerror", (err) => pageErrors.push(err.message));
 
-    await page.goto("/console", { waitUntil: "domcontentloaded" });
-
-    // Open a dispute on the Checkers Sixty60 transaction as the customer.
+    // Sign in as the customer and open a dispute on the Checkers Sixty60 tx (43).
+    await signIn(page, PERSONA.customer);
     const corner = page.locator(".row", { hasText: "Checkers Sixty60" });
     await corner.getByRole("button", { name: "Open dispute" }).click();
     await expect(page.locator(".toast--ok")).toBeVisible();
@@ -35,8 +35,9 @@ test.describe("console — lifecycle, evidence and audit", () => {
     await page.getByRole("button", { name: "Upload sample evidence" }).click();
     await expect(page.locator(".toast--ok")).toContainText(/Evidence stored/i);
 
-    // Switch to the analyst — the staff transition controls appear.
-    await page.locator("#role").selectOption("9");
+    // Sign out and sign in as the analyst — the staff transition controls appear.
+    await switchPersona(page, PERSONA.analyst);
+    await page.locator('.row:has-text("(tx 43)")').getByRole("button", { name: "Inspect" }).first().click();
     await expect(page.getByRole("button", { name: "begin review" })).toBeVisible();
     await expect(page.getByRole("button", { name: "approve", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "evidence submitted" })).toHaveCount(0);
