@@ -25,7 +25,7 @@
     { "id": "infra-docker-ollama", "status": "done", "commit": "2a37930" },
     { "id": "phase2-report-docs", "status": "done", "commit": "4741462" },
     { "id": "regression-harness", "status": "done", "commit": "d632467" },
-    { "id": "gui-landing", "status": "todo", "commit": null },
+    { "id": "gui-landing", "status": "done", "commit": "pending" },
     { "id": "gui-console-core", "status": "todo", "commit": null },
     { "id": "gui-console-lifecycle", "status": "todo", "commit": null },
     { "id": "gui-console-investigate", "status": "todo", "commit": null },

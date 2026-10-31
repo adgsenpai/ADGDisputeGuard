@@ -38,6 +38,7 @@ commit. Newest at the bottom.
 | # | Item | Verification | Commit |
 |---|------|--------------|--------|
 | 15 | Regression harness + Playwright config + landing smoke | `run-regression.sh` green: 50 Rust + 50/50 report, 25 TS, 1 e2e | `d632467` |
+| 16 | Landing page GUI test | `run-regression.sh` green; landing spec walks all sections, docs link, no page errors | `pending` |
 
 ## Completion
 
