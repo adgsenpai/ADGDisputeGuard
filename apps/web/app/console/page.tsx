@@ -5,6 +5,7 @@ import "./console.css";
 import Avatar from "@/components/avatar";
 import Login from "@/components/console/login";
 import Shell, { NAV, type ViewKey } from "@/components/console/shell";
+import { HBars, type Bar } from "@/components/console/charts";
 import {
   loadIdentity,
   clearIdentity,
@@ -12,6 +13,17 @@ import {
   type Identity,
 } from "@/lib/identity";
 import { ROLE_LABELS } from "@/lib/personas";
+import { advisoryScore, riskBand } from "@/lib/risk-advisory";
+
+const STATE_COLOR: Record<string, string> = {
+  submitted: "var(--dg-state-submitted)",
+  under_review: "var(--dg-state-under_review)",
+  evidence_required: "var(--dg-state-evidence_required)",
+  evidence_received: "var(--dg-state-evidence_received)",
+  investigating: "var(--dg-state-investigating)",
+  approved: "var(--dg-state-approved)",
+  rejected: "var(--dg-state-rejected)",
+};
 
 type Txn = { id: number; ownerId?: number; merchant: string; category: string; amountMinor: number; reason: string };
 type Dispute = { id: number; transactionId: number; state: string; version: number };
@@ -269,11 +281,46 @@ function Dashboard(s: Shared) {
   const disputedMinor = s.disputes.reduce((sum, d) => sum + (s.txnById.get(d.transactionId)?.amountMinor ?? 0), 0);
   const recent = [...s.allEvents].sort((a, b) => b.seq - a.seq).slice(0, 7);
 
+  // Charts are computed over disputes whose transaction is visible to the user.
+  const known = s.disputes.filter((d) => s.txnById.has(d.transactionId));
+
+  const stateCounts = new Map<string, number>();
+  for (const d of s.disputes) stateCounts.set(d.state, (stateCounts.get(d.state) ?? 0) + 1);
+  const stateBars: Bar[] = [...stateCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([state, count]) => ({ label: nice(state), value: count, color: STATE_COLOR[state] }));
+
+  const catTotals = new Map<string, number>();
+  for (const d of known) {
+    const tx = s.txnById.get(d.transactionId)!;
+    catTotals.set(tx.category, (catTotals.get(tx.category) ?? 0) + tx.amountMinor);
+  }
+  const categoryBars: Bar[] = [...catTotals.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([cat, minor]) => ({ label: cat, value: minor, display: zar(minor), color: "var(--dg-accent)" }));
+
+  const bands = { low: 0, medium: 0, high: 0 };
+  const scores: number[] = [];
+  for (const d of known) {
+    const score = advisoryScore(s.txnById.get(d.transactionId)!.amountMinor);
+    if (score === null) continue;
+    scores.push(score);
+    bands[riskBand(score)] += 1;
+  }
+  const riskBars: Bar[] = [
+    { label: "Low", value: bands.low, color: "var(--dg-success)" },
+    { label: "Medium", value: bands.medium, color: "var(--dg-warning)" },
+    { label: "High", value: bands.high, color: "var(--dg-danger)" },
+  ];
+  const avgRisk = scores.length ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 100) : null;
+
   const tiles = [
     { label: "Transactions", value: String(s.txns.length), tone: "info" },
     { label: "Open disputes", value: String(open), tone: "warning" },
     { label: "Approved", value: String(approved), tone: "success" },
     { label: "Rejected", value: String(rejected), tone: "danger" },
+    { label: "Avg advisory risk", value: avgRisk === null ? "—" : `${avgRisk}%`, tone: "violet" },
     { label: "Disputed value", value: zar(disputedMinor), tone: "accent", wide: true },
   ];
 
@@ -286,6 +333,21 @@ function Dashboard(s: Shared) {
             <div className="kpi__value">{t.value}</div>
           </div>
         ))}
+      </div>
+
+      <div className="cols cols--charts">
+        <section className="card">
+          <div className="card__title">Disputes by state</div>
+          <HBars bars={stateBars} ariaLabel="Disputes by state" />
+        </section>
+        <section className="card">
+          <div className="card__title">Disputed value by category</div>
+          <HBars bars={categoryBars} ariaLabel="Disputed value by category" formatValue={(n) => zar(n)} />
+        </section>
+        <section className="card">
+          <div className="card__title">Risk distribution</div>
+          <HBars bars={riskBars} ariaLabel="Advisory risk distribution" />
+        </section>
       </div>
 
       <div className="cols">

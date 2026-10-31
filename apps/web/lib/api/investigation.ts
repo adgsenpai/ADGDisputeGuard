@@ -3,27 +3,12 @@
 // touches the database.
 
 import type { DisputeStore } from "../domain/service";
-import { calculateRisk, type RiskInputs, type Weights } from "../domain/risk";
+import { calculateRisk } from "../domain/risk";
 import { investigate, type CaseContext, type InvestigationResult } from "../ollama/investigation";
 import type { AsyncProposer, Budget } from "../domain/investigation";
 import { OllamaClient } from "../ollama/client";
 import { SEED_TRANSACTIONS } from "./store";
-
-const EQUAL_WEIGHTS: Weights = { amount: 0.2, velocity: 0.2, merchant: 0.2, history: 0.2, geography: 0.2 };
-
-// Illustrative risk inputs derived from the transaction amount. Values are
-// demonstration data; the score is advisory only.
-function riskInputsFor(amountMinor: number): RiskInputs {
-  const amount = amountMinor / 100;
-  return {
-    zMax: 3,
-    amount: { x: amount, xMax: 10000 },
-    history: { history: [220, 240, 210, 255, 230, 245, 225, 235], current: amount },
-    velocity: { mu: 2, sigma: 0.5, current: 2.2 },
-    merchant: { chargebacks: 3, total: 40 },
-    geography: { requiredVel: 50, vMax: 900 },
-  };
-}
+import { EQUAL_WEIGHTS, riskInputsFor } from "../risk-advisory";
 
 export function buildCaseContext(store: DisputeStore, disputeId: number): CaseContext | null {
   const dispute = store.dispute(disputeId);
