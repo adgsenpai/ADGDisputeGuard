@@ -1,12 +1,14 @@
 "use client";
 
 import { NotificationBell } from "./control-center";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Avatar from "@/components/avatar";
 import Icon, { type IconName } from "@/components/console/icons";
+import CommandPalette, { type Command } from "@/components/console/command-palette";
 import { ROLE_LABELS } from "@/lib/personas";
 import type { Identity } from "@/lib/identity";
 import { LANGS, type Lang, type T } from "@/lib/i18n";
+import type { Theme } from "@/lib/theme";
 
 export type ViewKey =
   | "dashboard"
@@ -61,6 +63,8 @@ export default function Shell({
   t,
   lang,
   onLang,
+  theme,
+  onToggleTheme,
   children,
 }: {
   identity: Identity;
@@ -71,14 +75,28 @@ export default function Shell({
   t: T;
   lang: Lang;
   onLang: (l: Lang) => void;
+  theme: Theme;
+  onToggleTheme: () => void;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const [cmdk, setCmdk] = useState(false);
 
   function go(v: ViewKey) {
     onNavigate(v);
     setOpen(false);
   }
+
+  const visibleNav = NAV.filter((item) => !item.roles || item.roles.includes(identity.role));
+  const commands = useMemo<Command[]>(
+    () => [
+      ...visibleNav.map((n) => ({ id: `nav-${n.key}`, label: `Go to ${t(`nav.${n.key}`, n.label)}`, run: () => go(n.key) })),
+      { id: "theme", label: theme === "dark" ? "Switch to light theme" : "Switch to dark theme", run: onToggleTheme },
+      { id: "signout", label: t("action.signout"), run: onSignOut },
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [identity.role, theme, lang],
+  );
 
   return (
     <div className="shell" data-testid="console-shell">
@@ -134,6 +152,17 @@ export default function Shell({
             <p className="topbar__sub">{t(`view.${view}.sub`, VIEW_META[view].subtitle)}</p>
           </div>
           <div className="topbar__spacer" />
+          <button className="iconbtn" aria-label="Open command palette" title="Command palette (⌘K)" onClick={() => setCmdk(true)}>
+            <Icon name="command" size={16} />
+          </button>
+          <button
+            className="iconbtn"
+            aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+            title="Toggle theme"
+            onClick={onToggleTheme}
+          >
+            <Icon name={theme === "dark" ? "sun" : "moon"} size={16} />
+          </button>
           <NotificationBell count={badges?.notifications || 0} onClick={() => go("notifications")} />
           <select
             className="langselect"
@@ -159,6 +188,8 @@ export default function Shell({
 
         <div className="content">{children}</div>
       </div>
+
+      <CommandPalette open={cmdk} onOpenChange={setCmdk} commands={commands} />
     </div>
   );
 }

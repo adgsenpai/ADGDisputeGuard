@@ -18,6 +18,7 @@ import { ROLE_LABELS } from "@/lib/personas";
 import { advisoryScore, riskBand } from "@/lib/risk-advisory";
 import { reasonCode as lookupReasonCode, slaDaysRemaining } from "@/lib/chargeback";
 import { makeT, loadLang, saveLang, type Lang, type T } from "@/lib/i18n";
+import { loadTheme, saveTheme, applyTheme, type Theme } from "@/lib/theme";
 
 const STATE_COLOR: Record<string, string> = {
   submitted: "var(--dg-state-submitted)",
@@ -55,17 +56,28 @@ export default function ConsolePage() {
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [ready, setReady] = useState(false);
   const [lang, setLang] = useState<Lang>("en");
+  const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
     fetch("/api/auth").then(r => r.json()).then(data => setIdentity(data.identity)).catch(() => setIdentity(null)).finally(() => setReady(true));
     setLang(loadLang());
-
+    const th = loadTheme();
+    setTheme(th);
+    applyTheme(th);
   }, []);
 
   const t = useMemo(() => makeT(lang), [lang]);
   const onLang = useCallback((l: Lang) => {
     setLang(l);
     saveLang(l);
+  }, []);
+  const onToggleTheme = useCallback(() => {
+    setTheme((prev) => {
+      const next: Theme = prev === "dark" ? "light" : "dark";
+      saveTheme(next);
+      applyTheme(next);
+      return next;
+    });
   }, []);
 
   if (!ready) return <main className="console--loading"><Progress label="Restoring your secure session…" /></main>;
@@ -78,6 +90,8 @@ export default function ConsolePage() {
       t={t}
       lang={lang}
       onLang={onLang}
+      theme={theme}
+      onToggleTheme={onToggleTheme}
       onSignOut={() => {
         fetch("/api/auth", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "logout" }) }).finally(() => { clearIdentity(); setIdentity(null); });
       }}
@@ -92,12 +106,16 @@ function ConsoleApp({
   t,
   lang,
   onLang,
+  theme,
+  onToggleTheme,
 }: {
   identity: Identity;
   onSignOut: () => void;
   t: T;
   lang: Lang;
   onLang: (l: Lang) => void;
+  theme: Theme;
+  onToggleTheme: () => void;
 }) {
   const [view, setView] = useState<ViewKey>("dashboard");
   const [txns, setTxns] = useState<Txn[]>([]);
@@ -308,7 +326,7 @@ function ConsoleApp({
   };
 
   return (
-    <Shell identity={identity} view={view} onNavigate={navigate} onSignOut={onSignOut} badges={badges} t={t} lang={lang} onLang={onLang}>
+    <Shell identity={identity} view={view} onNavigate={navigate} onSignOut={onSignOut} badges={badges} t={t} lang={lang} onLang={onLang} theme={theme} onToggleTheme={onToggleTheme}>
       {toast && <div role="status" className={`toast toast--${toast.kind}`}>{toast.text}</div>}
       {(busy || initialLoading) && <Progress label={busy ? busyLabel : "Loading your payments, cases and activity…"} />}
       {["statement", "notifications", "assistant", "monitoring", "users"].includes(view) && <WorkspaceView view={view} identity={identity} workspace={workspace} inspect={inspect} openDispute={openDispute} onNavigate={navigate} />}

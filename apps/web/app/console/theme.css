@@ -64,3 +64,23 @@
   --dg-state-approved: #34d399;
   --dg-state-rejected: #fb7185;
 }
+
+/* Light theme — opt-in via data-theme="light" on the document element. */
+:root[data-theme="light"] {
+  --dg-bg: #eef1f6;
+  --dg-bg-2: #ffffff;
+  --dg-surface: #ffffff;
+  --dg-surface-2: #f3f5f9;
+  --dg-surface-3: #e7edf4;
+  --dg-elevated: #ffffff;
+  --dg-border: #d7deea;
+  --dg-border-soft: #e7ecf3;
+  --dg-overlay: rgba(15, 23, 42, 0.38);
+
+  --dg-text: #0f1b2d;
+  --dg-text-soft: #3a4860;
+  --dg-text-dim: #68748d;
+
+  --dg-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 10px 24px rgba(16, 24, 40, 0.08);
+  --dg-shadow-lg: 0 24px 60px rgba(16, 24, 40, 0.18);
+}
