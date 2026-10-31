@@ -40,7 +40,7 @@ commit. Newest at the bottom.
 | 15 | Regression harness + Playwright config + landing smoke | `run-regression.sh` green: 50 Rust + 50/50 report, 25 TS, 1 e2e | `d632467` |
 | 16 | Landing page GUI test | `run-regression.sh` green; landing spec walks all sections, docs link, no page errors | `bac1e22` |
 | 17 | Console core GUI test | `run-regression.sh` green; lists txns, opens dispute, idempotent replay, audit shows created | `073b7aa` |
-| 18 | Console lifecycle + evidence + audit GUI test | `run-regression.sh` green; role gating, evidence upload, full analyst path to approved, stale-version 409 | `pending` |
+| 18 | Console lifecycle + evidence + audit GUI test | `run-regression.sh` green; role gating, evidence upload, full analyst path to approved, stale-version 409 | `26ed371` |
 
 ## Completion
 
