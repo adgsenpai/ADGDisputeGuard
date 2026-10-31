@@ -12,6 +12,7 @@ import {
   type Upload,
   type ScanResult,
 } from "../domain/evidence";
+import { suggestReasonCode } from "../chargeback";
 
 export type ApiResult = { status: number; body: unknown };
 
@@ -70,6 +71,10 @@ export function createDispute(
     };
     return { status: map[result.kind] ?? 400, body: { error: result.kind } };
   }
+  if (!result.replayed) {
+    const reasonText = typeof body.reason === "string" ? body.reason : "";
+    store.setDisputeMeta(result.dispute.id, { openedAt: Date.now(), reasonCode: suggestReasonCode(reasonText) });
+  }
   return { status: result.replayed ? 200 : 201, body: { dispute: result.dispute, replayed: result.replayed } };
 }
 
@@ -77,7 +82,8 @@ export function getDispute(store: DisputeStore, id: number): ApiResult {
   const dispute = store.dispute(id);
   if (!dispute) return { status: 404, body: { error: "unknown-dispute" } };
   const events: AuditEvent[] = store.eventsFor(id);
-  return { status: 200, body: { dispute, events } };
+  const meta = store.disputeMetaFor(id) ?? null;
+  return { status: 200, body: { dispute, events, meta } };
 }
 
 export function listDisputes(store: DisputeStore): ApiResult {

@@ -206,6 +206,22 @@
 .step--done { color: var(--dg-text-soft); }
 .step--current .step__label { color: var(--dg-text); font-weight: 800; }
 
+/* ---------------- Reason code + SLA ---------------- */
+.reasonbox { margin-top: 14px; padding: 14px; background: var(--dg-bg-2); border: 1px solid var(--dg-border); border-radius: var(--dg-r); }
+.reasonbox__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.codepill { font-family: var(--dg-mono); font-size: 12px; font-weight: 700; color: var(--dg-accent); background: rgba(45, 212, 191, 0.12); border: 1px solid rgba(45, 212, 191, 0.3); padding: 3px 9px; border-radius: 999px; }
+.reasonbox__title { font-weight: 700; font-size: 14px; }
+.reasonbox__desc { font-size: 12.5px; color: var(--dg-text-soft); margin-top: 4px; line-height: 1.5; }
+.sla { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+.sla--ok { color: var(--dg-success); background: rgba(52, 211, 153, 0.12); border: 1px solid rgba(52, 211, 153, 0.3); }
+.sla--warn { color: var(--dg-warning); background: rgba(251, 191, 36, 0.12); border: 1px solid rgba(251, 191, 36, 0.3); }
+.sla--over { color: var(--dg-danger); background: rgba(251, 113, 133, 0.12); border: 1px solid rgba(251, 113, 133, 0.3); }
+.provcredit { margin-top: 10px; padding: 9px 12px; font-size: 13px; color: var(--dg-success); background: rgba(52, 211, 153, 0.08); border: 1px dashed rgba(52, 211, 153, 0.4); border-radius: var(--dg-r-sm); }
+.reasonbox__evlabel { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--dg-text-dim); margin: 12px 0 6px; font-weight: 700; }
+.evlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.evlist li { font-size: 12.5px; color: var(--dg-text-soft); display: flex; gap: 8px; align-items: flex-start; }
+.evlist__tick { color: var(--dg-accent); font-weight: 800; }
+
 /* ---------------- Profile ---------------- */
 .profile { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
 .profile__name { font-size: 18px; font-weight: 800; }

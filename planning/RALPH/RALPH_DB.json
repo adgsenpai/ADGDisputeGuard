@@ -6,8 +6,10 @@
     "phase1_engine": "done",
     "phase2_app": "done",
     "phase3_qa": "done",
-    "phase4_saas": "done"
+    "phase4_saas": "done",
+    "phase5_bankgrade": "in_progress"
   },
+  "phase5_completion_promise": "DISPUTEGUARD BANKGRADE COMPLETE",
   "phase3_completion_promise": "DISPUTEGUARD QA COMPLETE",
   "phase4_completion_promise": "DISPUTEGUARD SAAS COMPLETE",
   "items": [
@@ -40,7 +42,14 @@
     { "id": "saas-transactions-tab", "status": "done", "commit": "974ca5c" },
     { "id": "saas-disputes-workspace", "status": "done", "commit": "9cddee5" },
     { "id": "saas-aux-tabs", "status": "done", "commit": "70e85c5" },
-    { "id": "saas-showcase-docs", "status": "done", "commit": "b1d6017" }
+    { "id": "saas-showcase-docs", "status": "done", "commit": "b1d6017" },
+    { "id": "bank-reason-codes-sla", "status": "done", "commit": "pending" },
+    { "id": "bank-tamper-audit", "status": "todo", "commit": null },
+    { "id": "bank-case-pdf", "status": "todo", "commit": null },
+    { "id": "bank-i18n", "status": "todo", "commit": null },
+    { "id": "bank-polish-theme-palette", "status": "todo", "commit": null },
+    { "id": "bank-session-auth", "status": "todo", "commit": null },
+    { "id": "bank-showcase-docs", "status": "todo", "commit": null }
   ],
   "iterations": []
 }

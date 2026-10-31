@@ -14,6 +14,7 @@ import {
 } from "@/lib/identity";
 import { ROLE_LABELS } from "@/lib/personas";
 import { advisoryScore, riskBand } from "@/lib/risk-advisory";
+import { reasonCode as lookupReasonCode, slaDaysRemaining } from "@/lib/chargeback";
 
 const STATE_COLOR: Record<string, string> = {
   submitted: "var(--dg-state-submitted)",
@@ -82,6 +83,7 @@ function ConsoleApp({ identity, onSignOut }: { identity: Identity; onSignOut: ()
   const [investigationsLog, setInvestigationsLog] = useState<InvRec[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
   const [events, setEvents] = useState<AuditEvent[]>([]);
+  const [meta, setMeta] = useState<{ openedAt: number; reasonCode: string } | null>(null);
   const [investigation, setInvestigation] = useState<Investigation | null>(null);
   const [toast, setToast] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -132,7 +134,9 @@ function ConsoleApp({ identity, onSignOut }: { identity: Identity; onSignOut: ()
   const loadDetail = useCallback(
     async (id: number) => {
       const res = await fetch(`/api/disputes/${id}`, { headers });
-      setEvents((await res.json()).events ?? []);
+      const data = await res.json();
+      setEvents(data.events ?? []);
+      setMeta(data.meta ?? null);
     },
     [headers],
   );
@@ -245,6 +249,7 @@ function ConsoleApp({ identity, onSignOut }: { identity: Identity; onSignOut: ()
     evidenceLog,
     investigationsLog,
     events,
+    meta,
     txnById,
     selected,
     selectedDispute,
@@ -282,6 +287,7 @@ type Shared = {
   evidenceLog: EvidenceRec[];
   investigationsLog: InvRec[];
   events: AuditEvent[];
+  meta: { openedAt: number; reasonCode: string } | null;
   txnById: Map<number, Txn>;
   selected: number | null;
   selectedDispute: Dispute | null;
@@ -561,6 +567,39 @@ function DisputesView(s: Shared) {
   );
 }
 
+function ReasonCodePanel({ meta, state, amountMinor }: { meta: { openedAt: number; reasonCode: string }; state: string; amountMinor: number }) {
+  const rc = lookupReasonCode(meta.reasonCode);
+  if (!rc) return null;
+  const active = ACTIVE(state);
+  const left = slaDaysRemaining(meta.openedAt, meta.reasonCode, Date.now());
+  const slaTone = left === null ? "" : left < 0 ? "sla--over" : left <= 5 ? "sla--warn" : "sla--ok";
+  const slaText = left === null ? "—" : left < 0 ? `SLA overdue by ${Math.abs(left)} day(s)` : `SLA: ${left} day(s) left`;
+
+  return (
+    <div className="reasonbox">
+      <div className="reasonbox__head">
+        <span className="codepill">{rc.scheme} · {rc.code}</span>
+        <span className={`sla ${slaTone}`}>{active ? slaText : "Resolved"}</span>
+      </div>
+      <div className="reasonbox__title">{rc.title}</div>
+      <div className="reasonbox__desc">{rc.description}</div>
+
+      {rc.provisionalCredit && active && (
+        <div className="provcredit">
+          Provisional credit issued: <b>{zar(amountMinor)}</b> <span className="mono">· pending investigation</span>
+        </div>
+      )}
+
+      <div className="reasonbox__evlabel">Evidence required</div>
+      <ul className="evlist">
+        {rc.requiredEvidence.map((e) => (
+          <li key={e}><span className="evlist__tick">✓</span>{e}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function CaseWorkspace({ s, dispute }: { s: Shared; dispute: Dispute }) {
   const tx = s.txnById.get(dispute.transactionId);
   return (
@@ -579,6 +618,8 @@ function CaseWorkspace({ s, dispute }: { s: Shared; dispute: Dispute }) {
         </div>
       )}
       <div className="kv"><span>Version</span><b>{dispute.version}</b></div>
+
+      {s.meta && <ReasonCodePanel meta={s.meta} state={dispute.state} amountMinor={tx?.amountMinor ?? 0} />}
 
       <div className="btnrow">
         {s.canActAsStaff ? (

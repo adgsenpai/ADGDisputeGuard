@@ -74,6 +74,14 @@ export class DisputeStore {
   private nextEvidenceSeq = 1;
   private nextInvestigationSeq = 1;
 
+  private disputeMeta = new Map<number, { openedAt: number; reasonCode: string }>();
+  setDisputeMeta(id: number, meta: { openedAt: number; reasonCode: string }): void {
+    if (!this.disputeMeta.has(id)) this.disputeMeta.set(id, meta);
+  }
+  disputeMetaFor(id: number): { openedAt: number; reasonCode: string } | undefined {
+    return this.disputeMeta.get(id);
+  }
+
   recordEvidence(e: Omit<EvidenceLogEntry, "seq">): void {
     this.evidenceLog.push({ seq: this.nextEvidenceSeq++, ...e });
   }

@@ -65,6 +65,12 @@ report, 25 TS, and 5 Playwright GUI tests; showcase video recorded and embedded.
 with RBAC, generated African-style avatars, dashboard with charts, tabbed shell,
 South African data; 27 TS + 9 Playwright GUI tests green, showcase re-recorded.
 
+## Phase 5 — Bank-grade
+
+| # | Item | Verification | Commit |
+|---|------|--------------|--------|
+| 30 | Chargeback reason codes + SLAs | `run-regression.sh` green (30 TS, 10 GUI); Visa/MC reason-code catalogue, per-dispute code + openedAt, SLA countdown, evidence checklist, provisional credit | `pending` |
+
 ## Completion
 
 All backlog items (Phase 1 + Phase 2 + Phase 3 + Phase 4) are done and every suite is green.

@@ -100,13 +100,39 @@ Per-item protocol for this phase:
 - [x] **Investigations + Evidence + Audit + Settings tabs**: aggregate views across cases (recent investigations, evidence register, full audit log) and a settings/profile tab. e2e smoke for each tab.
 - [x] **Showcase refresh + docs**: re-record the showcase against the new SaaS UI (login → dashboard → flows), refresh README/`testing/README.md`; confirm `testing/run-regression.sh` is fully green.
 
+### Phase 5 — Bank-grade (reason codes, integrity, PDF, i18n, real auth)
+
+Closes the gaps a bank's engineers probe for, with features that are both
+impressive and defensible: real card-scheme chargeback reason codes with
+regulatory SLAs, a tamper-evident audit log, audit-ready case report PDFs, a
+multi-language console, UI polish, and real signed session tokens so the API no
+longer trusts a client-sent role. Every slice keeps `testing/run-regression.sh`
+green, updating unit tests and e2e specs in lockstep.
+
+Per-item protocol for this phase:
+
+1. Implement the item under `apps/web/` (and `engine/`/scripts if needed),
+   updating affected unit tests and e2e specs so they match.
+2. Run `bash testing/run-regression.sh` — **all** suites must pass.
+3. Check the item off, append a row to `RALPH_LOG.md`, commit and push (one
+   commit per item, no attribution lines).
+
+- [x] **Chargeback reason codes + SLAs**: a Visa/Mastercard reason-code catalogue (`lib/chargeback.ts`) with title, description, required evidence, and a regulatory SLA window; derive a suggested code when a dispute is opened; store `openedAt` + reason code per dispute; surface the code, required-evidence checklist, an SLA countdown, and a provisional-credit indicator in the case workspace. Unit tests for the mapping; e2e asserts the code + SLA render.
+- [ ] **Tamper-evident audit log**: hash-chain every audit event (each entry carries the hash of the previous), add `GET /api/audit/verify` that recomputes the chain, and show an integrity badge in the Audit tab. Unit tests for chain validity and tamper detection; e2e asserts the verified badge.
+- [ ] **Case report PDF export**: a `GET /api/disputes/[id]/report` (or script) that renders an audit-ready per-case LaTeX report (transaction, reason code, lifecycle, evidence, investigation, audit trail) and compiles a PDF via the existing pdflatex pipeline, with a "Download case report" action. Test the LaTeX generation; e2e asserts the download action exists.
+- [ ] **Multi-language console (EN/isiZulu/Afrikaans)**: an i18n layer (`lib/i18n.ts`) with dictionaries for the three languages, a language switcher in the shell, console strings translated (persisted choice). Unit test for dictionary completeness; e2e switches language and asserts a translated string.
+- [ ] **Polish: theme + command palette**: a light/dark theme toggle (tokens already defined; add a light palette) persisted per viewer, and a ⌘K/Ctrl-K command palette to jump between tabs and cases. e2e toggles theme and opens the palette.
+- [ ] **Real session tokens**: a `POST /api/session` that mints a signed (HMAC) session token for the chosen persona server-side, a `DELETE /api/session` to end it, and request auth that **verifies the token** and derives identity from it — the API no longer trusts `x-user-role` from the client. Update the login to obtain a token, the client to send it, and all unit/e2e/API callers. Unit tests for signing/verification and tamper/expiry rejection.
+- [ ] **Showcase refresh + docs**: re-record the showcase to feature the bank-grade additions, refresh README/`testing/README.md`; confirm `testing/run-regression.sh` is fully green.
+
 ## State
 
 - Loop owner: autonomous session
 - Source of truth for scope: `planning/Software Spec/equations.tex` (+ `engine/` reference implementation)
 - Phase 1 + Phase 2 completion promise (met): `DISPUTEGUARD ENGINE COMPLETE`
 - Phase 3 completion promise (met): `DISPUTEGUARD QA COMPLETE`
-- Phase 4 completion promise: `DISPUTEGUARD SAAS COMPLETE`
-- Note: the Phase 4 promise means every Phase 4 backlog item is done and
-  `testing/run-regression.sh` passes (all suites green, new SaaS UI shipped and
-  the showcase re-recorded against it).
+- Phase 4 completion promise (met): `DISPUTEGUARD SAAS COMPLETE`
+- Phase 5 completion promise: `DISPUTEGUARD BANKGRADE COMPLETE`
+- Note: the Phase 5 promise means every Phase 5 backlog item is done and
+  `testing/run-regression.sh` passes (all suites green, bank-grade features
+  shipped and the showcase re-recorded).
