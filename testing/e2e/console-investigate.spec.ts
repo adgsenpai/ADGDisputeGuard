@@ -14,8 +14,8 @@ test.describe("console — bounded investigation", () => {
 
     await page.goto("/console", { waitUntil: "domcontentloaded" });
 
-    // Open a dispute on the Studio Supply transaction and inspect it.
-    const studio = page.locator(".row", { hasText: "Studio Supply" });
+    // Open a dispute on the Mr Price transaction and inspect it.
+    const studio = page.locator(".row", { hasText: "Mr Price" });
     await studio.getByRole("button", { name: "Open dispute" }).click();
     await expect(page.locator(".toast--ok")).toBeVisible();
 

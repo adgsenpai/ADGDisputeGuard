@@ -18,10 +18,18 @@ const ANALYST = { id: 9, role: "analyst" };
 
 test("listTransactions hides other customers' transactions", () => {
   const txs = SEED_TRANSACTIONS.map((t) => ({ id: t.id, ownerId: t.ownerId }));
+  const ownedBy = (id) => SEED_TRANSACTIONS.filter((t) => t.ownerId === id).length;
+
   const asOwner = listTransactions(txs, CUSTOMER).body.transactions;
-  assert.ok(asOwner.length === SEED_TRANSACTIONS.length);
-  const asStranger = listTransactions(txs, STRANGER).body.transactions;
-  assert.equal(asStranger.length, 0);
+  assert.equal(asOwner.length, ownedBy(CUSTOMER.id));
+  assert.ok(asOwner.every((t) => t.ownerId === CUSTOMER.id));
+
+  // Another customer sees only their own transactions, not the owner's.
+  const asOther = listTransactions(txs, STRANGER).body.transactions;
+  assert.equal(asOther.length, ownedBy(STRANGER.id));
+  assert.ok(asOther.every((t) => t.ownerId === STRANGER.id));
+
+  // Staff see every transaction.
   const asStaff = listTransactions(txs, ANALYST).body.transactions;
   assert.equal(asStaff.length, SEED_TRANSACTIONS.length);
 });

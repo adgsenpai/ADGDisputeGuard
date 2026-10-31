@@ -5,9 +5,11 @@
   "phases": {
     "phase1_engine": "done",
     "phase2_app": "done",
-    "phase3_qa": "done"
+    "phase3_qa": "done",
+    "phase4_saas": "in_progress"
   },
   "phase3_completion_promise": "DISPUTEGUARD QA COMPLETE",
+  "phase4_completion_promise": "DISPUTEGUARD SAAS COMPLETE",
   "items": [
     { "id": "scaffold", "status": "done", "commit": "19e806a" },
     { "id": "signal-normalisation", "status": "done", "commit": "d2e16df" },
@@ -30,7 +32,15 @@
     { "id": "gui-console-lifecycle", "status": "done", "commit": "26ed371" },
     { "id": "gui-console-investigate", "status": "done", "commit": "dfeb181" },
     { "id": "showcase-video", "status": "done", "commit": "5c2b64b" },
-    { "id": "readme-showcase-docs", "status": "done", "commit": "1d44883" }
+    { "id": "readme-showcase-docs", "status": "done", "commit": "1d44883" },
+    { "id": "saas-design-sa-data", "status": "done", "commit": "pending" },
+    { "id": "saas-login-identity", "status": "todo", "commit": null },
+    { "id": "saas-shell-nav", "status": "todo", "commit": null },
+    { "id": "saas-dashboard", "status": "todo", "commit": null },
+    { "id": "saas-transactions-tab", "status": "todo", "commit": null },
+    { "id": "saas-disputes-workspace", "status": "todo", "commit": null },
+    { "id": "saas-aux-tabs", "status": "todo", "commit": null },
+    { "id": "saas-showcase-docs", "status": "todo", "commit": null }
   ],
   "iterations": []
 }

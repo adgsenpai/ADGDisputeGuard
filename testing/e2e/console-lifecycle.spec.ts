@@ -21,8 +21,8 @@ test.describe("console — lifecycle, evidence and audit", () => {
 
     await page.goto("/console", { waitUntil: "domcontentloaded" });
 
-    // Open a dispute on the Corner Coffee transaction as the customer.
-    const corner = page.locator(".row", { hasText: "Corner Coffee" });
+    // Open a dispute on the Checkers Sixty60 transaction as the customer.
+    const corner = page.locator(".row", { hasText: "Checkers Sixty60" });
     await corner.getByRole("button", { name: "Open dispute" }).click();
     await expect(page.locator(".toast--ok")).toBeVisible();
     await expect(stateBadge(page)).toHaveText("submitted");

@@ -48,6 +48,12 @@ commit. Newest at the bottom.
 **Phase 3 result:** QA green — single regression command runs 50 Rust + 50/50
 report, 25 TS, and 5 Playwright GUI tests; showcase video recorded and embedded.
 
+## Phase 4 — Modern SaaS console
+
+| # | Item | Verification | Commit |
+|---|------|--------------|--------|
+| 22 | Design system + SA data + personas | `run-regression.sh` green; personas + generated avatars + theme tokens + SA seed data across 5 customers; unit + e2e updated | `pending` |
+
 ## Completion
 
 All backlog items (Phase 1 + Phase 2 + Phase 3) are done and every suite is green.

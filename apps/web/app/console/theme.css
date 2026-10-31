@@ -1,0 +1,66 @@
+/* DisputeGuard console design system — tokens + base primitives.
+   Dark-first SaaS palette with a teal brand accent. Consumed by the console
+   shell and tabs. Values are CSS custom properties so components stay thin. */
+
+:root {
+  /* Brand + accents */
+  --dg-accent: #2dd4bf;
+  --dg-accent-strong: #14b8a6;
+  --dg-accent-ink: #042f2a;
+  --dg-info: #38bdf8;
+  --dg-success: #34d399;
+  --dg-warning: #fbbf24;
+  --dg-danger: #fb7185;
+  --dg-violet: #a78bfa;
+
+  /* Surfaces (dark) */
+  --dg-bg: #0a0f1a;
+  --dg-bg-2: #0e1524;
+  --dg-surface: #121a2b;
+  --dg-surface-2: #161f33;
+  --dg-surface-3: #1c2740;
+  --dg-elevated: #1a2338;
+  --dg-border: #243049;
+  --dg-border-soft: #1b2438;
+  --dg-overlay: rgba(4, 8, 16, 0.66);
+
+  /* Text */
+  --dg-text: #eef2fb;
+  --dg-text-soft: #aeb9d1;
+  --dg-text-dim: #7d8aa6;
+
+  /* Radius + shadow */
+  --dg-r-sm: 8px;
+  --dg-r: 12px;
+  --dg-r-lg: 18px;
+  --dg-r-xl: 24px;
+  --dg-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.28);
+  --dg-shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.45);
+
+  /* Spacing scale */
+  --dg-1: 4px;
+  --dg-2: 8px;
+  --dg-3: 12px;
+  --dg-4: 16px;
+  --dg-5: 24px;
+  --dg-6: 32px;
+  --dg-8: 48px;
+
+  /* Typography */
+  --dg-font: "Manrope Variable", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --dg-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --dg-sidebar-w: 248px;
+  --dg-topbar-h: 64px;
+}
+
+/* State color helpers shared by badges/charts. */
+:root {
+  --dg-state-submitted: #38bdf8;
+  --dg-state-under_review: #fbbf24;
+  --dg-state-evidence_required: #f59e0b;
+  --dg-state-evidence_received: #a78bfa;
+  --dg-state-investigating: #818cf8;
+  --dg-state-approved: #34d399;
+  --dg-state-rejected: #fb7185;
+}

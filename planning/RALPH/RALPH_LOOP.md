@@ -74,12 +74,39 @@ Per-item protocol for this phase:
 - [x] **Showcase video**: `testing/record-showcase.mjs` drives a narrated end-to-end walkthrough, records it, and ffmpeg produces an optimised `testing/media/videos/showcase.mp4` and `testing/media/gifs/showcase.gif` (plus per-flow GIFs from the spec videos), committed.
 - [x] **README showcase + testing docs**: embed the showcase GIF (and link the MP4) in `README.md`, document regression + GUI testing, and add `testing/README.md`; confirm `testing/run-regression.sh` is green.
 
+### Phase 4 — Modern SaaS console (login, RBAC, dashboard, SA data)
+
+Turns the `/console` demo into a polished, modern SaaS application: a
+passwordless persona login that also picks the RBAC role (pseudo Mzansi names +
+generated African-style avatars), an app shell with a sidebar and many tabs, a
+metrics dashboard, and authentic South African transaction data. Every slice
+keeps `testing/run-regression.sh` green — the unit tests and the Playwright GUI
+specs are updated in lockstep with the UI/data.
+
+Per-item protocol for this phase:
+
+1. Implement the item under `apps/web/` (components, lib, pages), updating the
+   affected unit tests and e2e specs so they match.
+2. Run `bash testing/run-regression.sh` — **all** suites must pass.
+3. Check the item off, append a row to `RALPH_LOG.md`, commit and push (one
+   commit per item, no attribution lines).
+
+- [x] **Design system + SA data + personas**: new `console.css` design tokens and base UI; `lib/personas.ts` (Mzansi personas → roles, mapped to backend user ids); generated SVG `Avatar` (`lib/avatar.ts` / component, no external calls, no real people); extend `DEMO_USERS` and rewrite `SEED_TRANSACTIONS` with real South African merchants across several customer personas (keep tx 42 = R1 249,00 for the pinned test). Update `api.test.mjs` owner filter and the e2e merchant references. Regression green.
+- [ ] **Passwordless login + identity**: a login screen (persona cards with avatar, name, role badge) that signs in without a password and sets the RBAC identity (persisted in `localStorage`), with sign-out; `/console` requires a signed-in persona. Add an e2e sign-in helper and gate spec; update existing specs to sign in first.
+- [ ] **App shell + navigation**: sidebar + topbar shell with tabbed views (Dashboard, Transactions, Disputes, Investigations, Evidence, Audit, Settings), signed-in persona menu, responsive + theme-aware; migrate the existing transaction/dispute/case functionality into the Transactions and Disputes tabs. Update e2e to navigate tabs.
+- [ ] **Dashboard**: KPI tiles (open / in-review / approved / rejected disputes, total disputed ZAR, average advisory risk) and accessible inline-SVG charts (disputes by state, disputed amount by category, risk distribution) plus a recent-activity feed, computed from the store. e2e asserts the KPIs render.
+- [ ] **Transactions tab**: modern table with search, category filters, amount + advisory risk badge, and open-dispute action; respects RBAC visibility. e2e covers search/filter + open.
+- [ ] **Disputes queue + case workspace**: a filterable dispute queue and a case workspace with a lifecycle stepper, role-gated actions, evidence panel, bounded investigation, and an audit timeline. e2e covers the analyst path + investigation in the new UI.
+- [ ] **Investigations + Evidence + Audit + Settings tabs**: aggregate views across cases (recent investigations, evidence register, full audit log) and a settings/profile tab. e2e smoke for each tab.
+- [ ] **Showcase refresh + docs**: re-record the showcase against the new SaaS UI (login → dashboard → flows), refresh README/`testing/README.md`; confirm `testing/run-regression.sh` is fully green.
+
 ## State
 
 - Loop owner: autonomous session
 - Source of truth for scope: `planning/Software Spec/equations.tex` (+ `engine/` reference implementation)
 - Phase 1 + Phase 2 completion promise (met): `DISPUTEGUARD ENGINE COMPLETE`
-- Phase 3 completion promise: `DISPUTEGUARD QA COMPLETE`
-- Note: the Phase 3 promise means every Phase 3 backlog item is done and
-  `testing/run-regression.sh` passes (all suites green, showcase media produced
-  and embedded in the README).
+- Phase 3 completion promise (met): `DISPUTEGUARD QA COMPLETE`
+- Phase 4 completion promise: `DISPUTEGUARD SAAS COMPLETE`
+- Note: the Phase 4 promise means every Phase 4 backlog item is done and
+  `testing/run-regression.sh` passes (all suites green, new SaaS UI shipped and
+  the showcase re-recorded against it).

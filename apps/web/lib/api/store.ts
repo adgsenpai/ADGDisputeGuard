@@ -14,14 +14,37 @@ export type SeedTransaction = {
   reason: string;
 };
 
-// Demo transactions (owner 1), mirroring the landing-page sample data.
+// Demo transactions with real South African merchants, spread across several
+// customer personas (see lib/personas.ts). Amounts are in cents (ZAR).
+// Note: tx 42 is kept at R1 249,00 (124900) because tests pin it.
 export const SEED_TRANSACTIONS: SeedTransaction[] = [
-  { id: 42, ownerId: 1, merchant: "Atlas Online", category: "Shopping", amountMinor: 124900, reason: "I don't recognise this payment." },
-  { id: 43, ownerId: 1, merchant: "Corner Coffee", category: "Food & drink", amountMinor: 6800, reason: "I was charged more than expected." },
-  { id: 51, ownerId: 1, merchant: "Studio Supply", category: "Shopping", amountMinor: 89900, reason: "The order hasn't arrived." },
-  { id: 52, ownerId: 1, merchant: "Stream House", category: "Subscription", amountMinor: 14900, reason: "I cancelled this subscription." },
-  { id: 61, ownerId: 1, merchant: "Coastline Stay", category: "Accommodation", amountMinor: 245000, reason: "The cancelled booking was not refunded." },
-  { id: 62, ownerId: 1, merchant: "City Shuttle", category: "Transport", amountMinor: 18500, reason: "I was charged twice." },
+  // Thabo Nkosi (owner 1) — Johannesburg
+  { id: 42, ownerId: 1, merchant: "Takealot", category: "Shopping", amountMinor: 124900, reason: "I don't recognise this payment." },
+  { id: 43, ownerId: 1, merchant: "Checkers Sixty60", category: "Groceries", amountMinor: 6800, reason: "I was charged more than expected." },
+  { id: 51, ownerId: 1, merchant: "Mr Price", category: "Shopping", amountMinor: 89900, reason: "The order hasn't arrived." },
+  { id: 52, ownerId: 1, merchant: "Showmax", category: "Subscription", amountMinor: 9900, reason: "I cancelled this subscription." },
+  { id: 61, ownerId: 1, merchant: "Southern Sun Hotels", category: "Accommodation", amountMinor: 245000, reason: "The cancelled booking was not refunded." },
+  { id: 62, ownerId: 1, merchant: "Bolt", category: "Transport", amountMinor: 18500, reason: "I was charged twice." },
+
+  // Lerato Mokoena (owner 2) — Pretoria
+  { id: 70, ownerId: 2, merchant: "Woolworths", category: "Groceries", amountMinor: 45600, reason: "The amount looks wrong." },
+  { id: 71, ownerId: 2, merchant: "Vodacom", category: "Airtime & data", amountMinor: 29900, reason: "I was billed after cancelling." },
+  { id: 72, ownerId: 2, merchant: "Netflix", category: "Subscription", amountMinor: 19900, reason: "I was charged twice this month." },
+
+  // Sipho Dlamini (owner 3) — Durban
+  { id: 80, ownerId: 3, merchant: "Nando's", category: "Food & drink", amountMinor: 21500, reason: "I never received this order." },
+  { id: 81, ownerId: 3, merchant: "Gautrain", category: "Transport", amountMinor: 8700, reason: "Double tap on the gate." },
+  { id: 82, ownerId: 3, merchant: "Takealot", category: "Shopping", amountMinor: 334900, reason: "The order hasn't arrived." },
+
+  // Naledi Khumalo (owner 4) — Cape Town
+  { id: 90, ownerId: 4, merchant: "Dis-Chem", category: "Pharmacy", amountMinor: 15600, reason: "Charged for an item I returned." },
+  { id: 91, ownerId: 4, merchant: "Cape Union Mart", category: "Shopping", amountMinor: 129900, reason: "I was charged more than the price shown." },
+  { id: 92, ownerId: 4, merchant: "Uber", category: "Transport", amountMinor: 12300, reason: "Trip was cancelled but still charged." },
+
+  // Ayanda Zulu (owner 5) — Soweto
+  { id: 100, ownerId: 5, merchant: "Shoprite", category: "Groceries", amountMinor: 9800, reason: "I was charged twice." },
+  { id: 101, ownerId: 5, merchant: "MTN", category: "Airtime & data", amountMinor: 5500, reason: "Data bundle never loaded." },
+  { id: 102, ownerId: 5, merchant: "DStv", category: "Subscription", amountMinor: 87900, reason: "I cancelled this subscription." },
 ];
 
 export function createSeededStore(): DisputeStore {
@@ -33,10 +56,15 @@ export function createSeededStore(): DisputeStore {
 }
 
 // Demo users available to the API (a real system authenticates these).
+// Ids match the personas in lib/personas.ts.
 export const DEMO_USERS: Record<string, User> = {
   "1": { id: 1, role: "customer" },
   "2": { id: 2, role: "customer" },
+  "3": { id: 3, role: "customer" },
+  "4": { id: 4, role: "customer" },
+  "5": { id: 5, role: "customer" },
   "9": { id: 9, role: "analyst" },
+  "10": { id: 10, role: "analyst" },
   "99": { id: 99, role: "admin" },
 };
 

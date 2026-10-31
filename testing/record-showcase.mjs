@@ -140,7 +140,7 @@ async function main() {
       await caption(page, "The working <b>console</b> — real dispute flows", 1400);
 
       await caption(page, "Open a dispute <b>·</b> ownership &amp; idempotent creation", 1000);
-      await page.locator(".row", { hasText: "Atlas Online" })
+      await page.locator(".row", { hasText: "Takealot" })
         .getByRole("button", { name: "Open dispute" }).click();
       await page.waitForTimeout(1200);
 
@@ -191,7 +191,7 @@ async function main() {
         await page.goto("/console", { waitUntil: "domcontentloaded" });
         await installCaption(page);
         await caption(page, "Open dispute <b>·</b> analyst lifecycle", 700);
-        await page.locator(".row", { hasText: "Corner Coffee" })
+        await page.locator(".row", { hasText: "Checkers Sixty60" })
           .getByRole("button", { name: "Open dispute" }).click();
         await page.waitForTimeout(700);
         await page.locator("#role").selectOption("9");
@@ -207,7 +207,7 @@ async function main() {
         await page.goto("/console", { waitUntil: "domcontentloaded" });
         await installCaption(page);
         await caption(page, "Bounded <b>AI investigation</b>", 700);
-        await page.locator(".row", { hasText: "Studio Supply" })
+        await page.locator(".row", { hasText: "Mr Price" })
           .getByRole("button", { name: "Open dispute" }).click();
         await page.waitForTimeout(700);
         await page.getByRole("button", { name: "Run bounded investigation" }).click();
