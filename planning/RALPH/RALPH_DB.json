@@ -27,7 +27,7 @@
     { "id": "regression-harness", "status": "done", "commit": "d632467" },
     { "id": "gui-landing", "status": "done", "commit": "bac1e22" },
     { "id": "gui-console-core", "status": "done", "commit": "073b7aa" },
-    { "id": "gui-console-lifecycle", "status": "todo", "commit": null },
+    { "id": "gui-console-lifecycle", "status": "done", "commit": "pending" },
     { "id": "gui-console-investigate", "status": "todo", "commit": null },
     { "id": "showcase-video", "status": "todo", "commit": null },
     { "id": "readme-showcase-docs", "status": "todo", "commit": null }

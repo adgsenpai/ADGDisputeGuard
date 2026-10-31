@@ -69,7 +69,7 @@ Per-item protocol for this phase:
 - [x] **Regression harness**: `testing/run-regression.sh` runs the Rust tests + LaTeX report, the TS `npm test`, and the Playwright e2e suite, failing if any suite fails; Playwright config (system Chrome, video on, auto-starts the app); `.gitignore` for raw run artifacts (keep curated media). Landing smoke spec green.
 - [x] **Landing page GUI test**: `testing/e2e/landing.spec.ts` — page renders hero + core sections, WebGL shield or SVG fallback present, no uncaught page errors; video recorded.
 - [x] **Console core GUI test**: `testing/e2e/console-core.spec.ts` — switch role, list transactions, open a dispute (ownership/idempotency), see it in the dispute list.
-- [ ] **Console lifecycle + evidence + audit GUI test**: `testing/e2e/console-lifecycle.spec.ts` — role-gated lifecycle transition, evidence upload validation, audit trail reflects the changes.
+- [x] **Console lifecycle + evidence + audit GUI test**: `testing/e2e/console-lifecycle.spec.ts` — role-gated lifecycle transition, evidence upload validation, audit trail reflects the changes.
 - [ ] **Console investigation GUI test**: `testing/e2e/console-investigate.spec.ts` — run the bounded investigation from the UI, see the result and that the budget/allowlist bounds hold.
 - [ ] **Showcase video**: `testing/record-showcase.mjs` drives a narrated end-to-end walkthrough, records it, and ffmpeg produces an optimised `testing/media/videos/showcase.mp4` and `testing/media/gifs/showcase.gif` (plus per-flow GIFs from the spec videos), committed.
 - [ ] **README showcase + testing docs**: embed the showcase GIF (and link the MP4) in `README.md`, document regression + GUI testing, and add `testing/README.md`; confirm `testing/run-regression.sh` is green.
