@@ -1,4 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 /**
  * GUI / end-to-end test configuration for DisputeGuard.
@@ -55,6 +57,13 @@ export default defineConfig({
       // recorder uses the real model separately.
       OLLAMA_BASE_URL: process.env.E2E_OLLAMA_BASE_URL ?? "http://127.0.0.1:9",
       OLLAMA_TIMEOUT_MS: "1000",
+      // The proxy middleware checks mutating requests' Origin against APP_URL;
+      // point it at the test origin so the browser sign-in is not refused.
+      APP_URL: BASE_URL,
+      // A fresh SQLite data dir per run keeps the store deterministic.
+      DATA_DIR: join(tmpdir(), `dg-e2e-${Date.now()}`),
+      // Keep the passwordless persona sign-in available for the tests.
+      SHOWCASE_DEMO_LOGIN: "true",
     },
   },
 });

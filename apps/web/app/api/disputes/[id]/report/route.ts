@@ -1,12 +1,10 @@
 import { getStore, SEED_TRANSACTIONS } from "@/lib/api/store";
 import { userFromRequest } from "@/lib/api/request";
-import { renderCaseReportTex, type CaseReportData } from "@/lib/report/case-report";
+import { type CaseReportData } from "@/lib/report/case-report";
 import { reasonCode as lookupReasonCode } from "@/lib/chargeback";
 import { advisoryScore } from "@/lib/risk-advisory";
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, writeFileSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { renderCasePdf } from "@/lib/report/pdf";
+import { caseAttachments } from "@/lib/control/attachments";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -73,30 +71,14 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     generatedAt: new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC",
   };
 
-  const tex = renderCaseReportTex(data);
-
-  let dir: string | null = null;
   try {
-    dir = mkdtempSync(join(tmpdir(), "dg-report-"));
-    const texPath = join(dir, "case.tex");
-    writeFileSync(texPath, tex, "utf8");
-    for (let pass = 0; pass < 2; pass++) {
-      execFileSync("pdflatex", ["-interaction=nonstopmode", "-halt-on-error", "-output-directory", dir, texPath], {
-        stdio: "ignore",
-        timeout: 20_000,
-      });
-    }
-    const pdf = readFileSync(join(dir, "case.pdf"));
-    return new Response(new Uint8Array(pdf), {
-      status: 200,
-      headers: {
-        "content-type": "application/pdf",
-        "content-disposition": `attachment; filename="disputeguard-case-${id}.pdf"`,
-      },
-    });
+    const pdf = await renderCasePdf(data, caseAttachments(id));
+    return new Response(new Uint8Array(pdf), { headers: {
+      "content-type": "application/pdf",
+      "content-disposition": `attachment; filename="disputeguard-case-${id}.pdf"`,
+      "cache-control": "private, no-store",
+    } });
   } catch {
-    return Response.json({ error: "report-generation-failed" }, { status: 500 });
-  } finally {
-    if (dir) try { rmSync(dir, { recursive: true, force: true }); } catch {}
+    return Response.json({ error: "Report generation failed. Please try again." }, { status: 500 });
   }
 }

@@ -65,6 +65,19 @@ export type InvestigationLogEntry = {
 };
 
 export class DisputeStore {
+  private onChange: (() => void) | undefined;
+  setPersistence(callback: () => void) { this.onChange = callback; }
+  snapshot() {
+    return { transactions: [...this.transactions], disputes: [...this.disputes], idempotency: [...this.idempotency], auditLog: this.auditLog, evidenceLog: this.evidenceLog, investigationLog: this.investigationLog, disputeMeta: [...this.disputeMeta], nextDisputeId: this.nextDisputeId, nextSeq: this.nextSeq, nextEvidenceSeq: this.nextEvidenceSeq, nextInvestigationSeq: this.nextInvestigationSeq };
+  }
+  static restore(data: ReturnType<DisputeStore["snapshot"]>) {
+    const store = new DisputeStore();
+    Object.assign(store, data);
+    store.transactions = new Map(data.transactions); store.disputes = new Map(data.disputes);
+    store.idempotency = new Map(data.idempotency); store.disputeMeta = new Map(data.disputeMeta);
+    return store;
+  }
+
   private transactions = new Map<number, Transaction>();
   private disputes = new Map<number, Dispute>();
   private idempotency = new Map<string, { requestHash: string; disputeId: number }>();
@@ -78,7 +91,7 @@ export class DisputeStore {
 
   private disputeMeta = new Map<number, { openedAt: number; reasonCode: string }>();
   setDisputeMeta(id: number, meta: { openedAt: number; reasonCode: string }): void {
-    if (!this.disputeMeta.has(id)) this.disputeMeta.set(id, meta);
+    if (!this.disputeMeta.has(id)) { this.disputeMeta.set(id, meta); this.onChange?.(); }
   }
   disputeMetaFor(id: number): { openedAt: number; reasonCode: string } | undefined {
     return this.disputeMeta.get(id);
@@ -86,12 +99,14 @@ export class DisputeStore {
 
   recordEvidence(e: Omit<EvidenceLogEntry, "seq">): void {
     this.evidenceLog.push({ seq: this.nextEvidenceSeq++, ...e });
+    this.onChange?.();
   }
   allEvidence(): EvidenceLogEntry[] {
     return [...this.evidenceLog];
   }
   recordInvestigation(i: Omit<InvestigationLogEntry, "seq">): void {
     this.investigationLog.push({ seq: this.nextInvestigationSeq++, ...i });
+    this.onChange?.();
   }
   allInvestigations(): InvestigationLogEntry[] {
     return [...this.investigationLog];
@@ -99,6 +114,7 @@ export class DisputeStore {
 
   addTransaction(tx: Transaction): void {
     this.transactions.set(tx.id, tx);
+    this.onChange?.();
   }
 
   getTransaction(id: number): Transaction | undefined {
@@ -130,6 +146,7 @@ export class DisputeStore {
     const prevHash = this.auditLog.length ? this.auditLog[this.auditLog.length - 1].hash : GENESIS;
     const hash = linkHash(prevHash, { seq, disputeId, actorId, detail });
     this.auditLog.push({ seq, disputeId, actorId, detail, prevHash, hash });
+    this.onChange?.();
   }
 
   verifyAuditChain(): VerifyResult {
@@ -172,6 +189,7 @@ export class DisputeStore {
   ): Dispute | ActionError {
     const dispute = this.disputes.get(disputeId);
     if (!dispute) return { kind: "unknown-dispute" };
+    if (actor.role === "customer" && this.getTransaction(dispute.transactionId)?.ownerId !== actor.id) return { kind: "not-authorised" };
     if (!actorMayPerform(actor.role, event)) return { kind: "not-authorised" };
     const from = dispute.state;
     const updated = applyTransition(dispute, event, expectedVersion);

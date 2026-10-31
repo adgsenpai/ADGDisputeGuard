@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import "./console.css";
+import { Progress, useWorkspace, WorkspaceView } from "@/components/console/control-center";
 import Avatar from "@/components/avatar";
 import { availableEvents, type State, type Event } from "@/lib/domain/lifecycle";
 import Login from "@/components/console/login";
@@ -56,9 +57,9 @@ export default function ConsolePage() {
   const [lang, setLang] = useState<Lang>("en");
 
   useEffect(() => {
-    setIdentity(loadIdentity());
+    fetch("/api/auth").then(r => r.json()).then(data => setIdentity(data.identity)).catch(() => setIdentity(null)).finally(() => setReady(true));
     setLang(loadLang());
-    setReady(true);
+
   }, []);
 
   const t = useMemo(() => makeT(lang), [lang]);
@@ -67,7 +68,7 @@ export default function ConsolePage() {
     saveLang(l);
   }, []);
 
-  if (!ready) return <main className="console--loading" aria-busy="true" />;
+  if (!ready) return <main className="console--loading"><Progress label="Restoring your secure session…" /></main>;
   if (!identity) return <Login onSignedIn={setIdentity} t={t} lang={lang} onLang={onLang} />;
 
   return (
@@ -78,8 +79,7 @@ export default function ConsolePage() {
       lang={lang}
       onLang={onLang}
       onSignOut={() => {
-        clearIdentity();
-        setIdentity(null);
+        fetch("/api/auth", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "logout" }) }).finally(() => { clearIdentity(); setIdentity(null); });
       }}
     />
   );
@@ -112,6 +112,9 @@ function ConsoleApp({
   const [investigation, setInvestigation] = useState<Investigation | null>(null);
   const [toast, setToast] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [busyLabel, setBusyLabel] = useState("");
+  const [initialLoading, setInitialLoading] = useState(true);
+  const workspace = useWorkspace(identity);
 
   const headers = useMemo(() => authHeaders(identity), [identity]);
   const txnById = useMemo(() => new Map(txns.map((t) => [t.id, t])), [txns]);
@@ -120,12 +123,12 @@ function ConsoleApp({
   useEffect(() => {
     const fromHash = () => {
       const h = window.location.hash.replace("#", "") as ViewKey;
-      if (NAV.some((n) => n.key === h)) setView(h);
+      if (NAV.some((n) => n.key === h && (!n.roles || n.roles.includes(identity.role)))) setView(h);
     };
     fromHash();
     window.addEventListener("hashchange", fromHash);
     return () => window.removeEventListener("hashchange", fromHash);
-  }, []);
+  }, [identity.role]);
   const navigate = useCallback((v: ViewKey) => {
     setView(v);
     if (typeof window !== "undefined") window.location.hash = v;
@@ -174,12 +177,8 @@ function ConsoleApp({
   );
 
   useEffect(() => {
-    loadTxns();
-    loadDisputes();
-    loadAudit();
-    loadEvidence();
-    loadInvestigations();
-  }, [loadTxns, loadDisputes, loadAudit, loadEvidence, loadInvestigations]);
+    Promise.all([loadTxns(), loadDisputes(), loadAudit(), loadEvidence(), loadInvestigations()]).catch(() => flash("err", "Some workspace data could not load. Refresh to retry.")).finally(() => setInitialLoading(false));
+  }, [loadTxns, loadDisputes, loadAudit, loadEvidence, loadInvestigations, flash]);
 
   useEffect(() => {
     if (selected !== null) {
@@ -191,7 +190,9 @@ function ConsoleApp({
   const selectedDispute = disputes.find((d) => d.id === selected) ?? null;
 
   async function openDispute(tx: Txn) {
+    if (busy) return;
     setBusy(true);
+    setBusyLabel("Submitting your dispute and updating the case timeline…");
     try {
       const res = await fetch("/api/disputes", {
         method: "POST",
@@ -204,9 +205,14 @@ function ConsoleApp({
         flash("ok", data.replayed ? "Existing dispute returned (idempotent)." : `Dispute #${data.dispute.id} opened.`);
         await Promise.all([loadDisputes(), loadAudit()]);
         setSelected(data.dispute.id);
+        navigate("disputes");
+        void workspace.refresh();
       }
+    } catch {
+      flash("err", "The request could not complete. Please check your connection and try again.");
     } finally {
       setBusy(false);
+      void workspace.refresh();
     }
   }
   async function doTransition(event: Event) {
@@ -216,6 +222,7 @@ function ConsoleApp({
       return;
     }
     setBusy(true);
+    setBusyLabel("Saving the case update…");
     try {
       const res = await fetch(`/api/disputes/${selectedDispute.id}/transition`, {
         method: "POST",
@@ -227,36 +234,28 @@ function ConsoleApp({
       else flash("ok", `Moved to ${data.dispute.state}.`);
       await Promise.all([loadDisputes(), loadDetail(selectedDispute.id), loadAudit()]);
     } catch {
-      flash("err", "Could not confirm the case update. Check your connection and refresh the case before trying again.");
+      flash("err", "The request could not complete. Please check your connection and try again.");
     } finally {
       setBusy(false);
+      void workspace.refresh();
     }
   }
-  async function submitEvidence() {
-    if (!selectedDispute) return;
-    setBusy(true);
+  async function submitEvidence(file: File) {
+    if (!selectedDispute || busy) return;
+    setBusy(true); setBusyLabel("Uploading evidence and updating the attachment register…");
     try {
-      const res = await fetch(`/api/disputes/${selectedDispute.id}/evidence`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          upload: { name: "statement.pdf", declaredType: "application/pdf", detectedType: "application/pdf", sizeBytes: 20480 },
-          scan: "clean",
-        }),
-      });
+      const form = new FormData(); form.set("file", file);
+      const res = await fetch(`/api/disputes/${selectedDispute.id}/evidence`, { method: "POST", body: form });
       const data = await res.json();
-      if (!res.ok) flash("err", `Evidence refused: ${data.error}`);
-      else {
-        flash("ok", `Evidence stored as ${data.receipt.storageName}.`);
-        await loadEvidence();
-      }
-    } finally {
-      setBusy(false);
-    }
+      if (!res.ok) flash("err", data.error);
+      else { flash("ok", data.message); await loadEvidence(); }
+    } catch { flash("err", "Evidence upload failed. Please try again."); }
+    finally { setBusy(false); void workspace.refresh(); }
   }
   async function runInvestigation() {
     if (!selectedDispute) return;
     setBusy(true);
+    setBusyLabel("Investigating the case: reviewing payment, evidence and risk signals…");
     setInvestigation(null);
     try {
       const res = await fetch(`/api/disputes/${selectedDispute.id}/investigate`, { method: "POST", headers });
@@ -266,8 +265,11 @@ function ConsoleApp({
         setInvestigation(data);
         await loadInvestigations();
       }
+    } catch {
+      flash("err", "The request could not complete. Please check your connection and try again.");
     } finally {
       setBusy(false);
+      void workspace.refresh();
     }
   }
 
@@ -277,7 +279,7 @@ function ConsoleApp({
   }
 
   const canActAsStaff = identity.role === "analyst" || identity.role === "admin";
-  const badges = { disputes: disputes.filter((d) => ACTIVE(d.state)).length || undefined };
+  const badges = { notifications: workspace.data?.notifications.filter(n => !n.read).length, disputes: disputes.filter((d) => ACTIVE(d.state)).length || undefined };
 
   const shared = {
     identity,
@@ -307,7 +309,9 @@ function ConsoleApp({
 
   return (
     <Shell identity={identity} view={view} onNavigate={navigate} onSignOut={onSignOut} badges={badges} t={t} lang={lang} onLang={onLang}>
-      {toast && <div className={`toast toast--${toast.kind}`}>{toast.text}</div>}
+      {toast && <div role="status" className={`toast toast--${toast.kind}`}>{toast.text}</div>}
+      {(busy || initialLoading) && <Progress label={busy ? busyLabel : "Loading your payments, cases and activity…"} />}
+      {["statement", "notifications", "assistant", "monitoring", "users"].includes(view) && <WorkspaceView view={view} identity={identity} workspace={workspace} inspect={inspect} openDispute={openDispute} onNavigate={navigate} />}
       {view === "dashboard" && <Dashboard {...shared} />}
       {view === "transactions" && <TransactionsView {...shared} />}
       {view === "disputes" && <DisputesView {...shared} />}
@@ -338,7 +342,7 @@ type Shared = {
   canActAsStaff: boolean;
   openDispute: (t: Txn) => void;
   doTransition: (e: Event) => void;
-  submitEvidence: () => void;
+  submitEvidence: (file: File) => void;
   runInvestigation: () => void;
   inspect: (id: number) => void;
   setSelected: (id: number) => void;
@@ -646,7 +650,7 @@ async function downloadReport(id: number, identity: Identity) {
   const res = await fetch(`/api/disputes/${id}/report`, {
     headers: { "x-user-id": String(identity.userId), "x-user-role": identity.role },
   });
-  if (!res.ok) return;
+  if (!res.ok) throw new Error("The report could not be generated. Please try again.");
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -656,6 +660,15 @@ async function downloadReport(id: number, identity: Identity) {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+}
+
+function ReportDownload({ id, identity }: { id: number; identity: Identity }) {
+  const [busy, setBusy] = useState(false); const [error, setError] = useState("");
+  return <div><button className="btn btn--ghost" disabled={busy} onClick={async () => {
+    setBusy(true); setError("");
+    try { await downloadReport(id, identity); } catch (e) { setError(e instanceof Error ? e.message : "Download failed."); }
+    finally { setBusy(false); }
+  }}>{busy ? "Preparing report…" : "Download case report"}</button>{busy && <Progress label="Building the branded report and attaching evidence…" />}{error && <p role="alert">{error}</p>}</div>;
 }
 
 function CaseWorkspace({ s, dispute }: { s: Shared; dispute: Dispute }) {
@@ -696,11 +709,13 @@ function CaseWorkspace({ s, dispute }: { s: Shared; dispute: Dispute }) {
       </div>
 
       <div className="btnrow" style={{ marginTop: 16 }}>
-        <button className="btn" disabled={s.busy} onClick={s.submitEvidence}>Upload sample evidence</button>
+        <label className="btn" style={{ cursor: s.busy ? "wait" : "pointer" }}>Attach evidence<input aria-label="Upload evidence file" type="file" accept=".pdf,.png,.jpg,.jpeg" disabled={s.busy} style={{ maxWidth: 200 }} onChange={e => { const file = e.target.files?.[0]; if (file) s.submitEvidence(file); e.target.value = ""; }} /></label>
         <button className="btn" disabled={s.busy} onClick={s.runInvestigation}>Run bounded investigation</button>
-        <button className="btn btn--ghost" onClick={() => downloadReport(dispute.id, s.identity)}>Download case report</button>
+        <ReportDownload id={dispute.id} identity={s.identity} />
       </div>
 
+      <div className="note">PDF, PNG or JPEG, up to 5 MB each. Files are format-checked; malware scanning is not configured.</div>
+      {s.evidenceLog.filter(e => e.disputeId === dispute.id).map(e => <div className="kv" key={e.seq}><span>Evidence #{e.seq} · {e.detectedType} · {Math.ceil(e.sizeBytes / 1024)} KB</span><a className="btn" href={`/api/attachments/${e.storageName}`}>Download file</a></div>)}
       {s.investigation && (
         <div className="summary">
           <div className="summary__head">

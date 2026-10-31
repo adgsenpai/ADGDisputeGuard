@@ -1,5 +1,6 @@
 "use client";
 
+import { NotificationBell } from "./control-center";
 import { useState } from "react";
 import Avatar from "@/components/avatar";
 import Icon, { type IconName } from "@/components/console/icons";
@@ -14,7 +15,12 @@ export type ViewKey =
   | "investigations"
   | "evidence"
   | "audit"
-  | "settings";
+  | "settings"
+  | "statement"
+  | "notifications"
+  | "monitoring"
+  | "assistant"
+  | "users";
 
 export const NAV: { key: ViewKey; label: string; icon: IconName; roles?: Identity["role"][] }[] = [
   { key: "dashboard", label: "Dashboard", icon: "dashboard" },
@@ -23,10 +29,20 @@ export const NAV: { key: ViewKey; label: string; icon: IconName; roles?: Identit
   { key: "investigations", label: "Investigations", icon: "investigations" },
   { key: "evidence", label: "Evidence", icon: "evidence" },
   { key: "audit", label: "Audit log", icon: "audit" },
+  { key: "statement", label: "Bank statement", icon: "transactions" },
+  { key: "assistant", label: "Ask assistant", icon: "investigations" },
+  { key: "notifications", label: "Notifications", icon: "evidence" },
+  { key: "monitoring", label: "Monitoring", icon: "dashboard", roles: ["admin"] },
+  { key: "users", label: "People & access", icon: "settings", roles: ["admin"] },
   { key: "settings", label: "Settings", icon: "settings" },
 ];
 
 export const VIEW_META: Record<ViewKey, { title: string; subtitle: string }> = {
+  statement: { title: "Bank statement", subtitle: "Review payments and check for possible disputes" },
+  assistant: { title: "Investigation assistant", subtitle: "Guided support for customers and analysts" },
+  notifications: { title: "Notifications", subtitle: "Case activity and email updates" },
+  monitoring: { title: "Monitoring", subtitle: "Continuous portfolio checks and review flags" },
+  users: { title: "People & access", subtitle: "Customer onboarding, invitations and permissions" },
   dashboard: { title: "Dashboard", subtitle: "Portfolio overview and recent activity" },
   transactions: { title: "Transactions", subtitle: "Card payments visible to you" },
   disputes: { title: "Disputes", subtitle: "Queue and case workspace" },
@@ -73,12 +89,12 @@ export default function Shell({
           <img src="/brand/disputeguard-logo.svg" alt="" className="sidebar__logo" />
           <div>
             <div className="sidebar__brandname">DisputeGuard</div>
-            <div className="sidebar__brandsub">{t("brand.console")}</div>
+            <div className="sidebar__brandsub">SHOWCASE</div>
           </div>
         </div>
 
         <nav className="nav" aria-label="Primary">
-          {NAV.map((item) => (
+          {NAV.filter(item => !item.roles || item.roles.includes(identity.role)).map((item) => (
             <button
               key={item.key}
               type="button"
@@ -114,14 +130,11 @@ export default function Shell({
             <Icon name="menu" />
           </button>
           <div className="topbar__titles">
-            <h1 className="topbar__title">{t(`view.${view}.title`)}</h1>
-            <p className="topbar__sub">{t(`view.${view}.sub`)}</p>
+            <h1 className="topbar__title">{t(`view.${view}.title`, VIEW_META[view].title)}</h1>
+            <p className="topbar__sub">{t(`view.${view}.sub`, VIEW_META[view].subtitle)}</p>
           </div>
           <div className="topbar__spacer" />
-          <div className="searchbox" aria-hidden="true">
-            <Icon name="search" size={16} />
-            <span>{t("action.search")}</span>
-          </div>
+          <NotificationBell count={badges?.notifications || 0} onClick={() => go("notifications")} />
           <select
             className="langselect"
             aria-label="Language"

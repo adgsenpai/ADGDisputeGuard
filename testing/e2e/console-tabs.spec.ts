@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { signIn, goTo, PERSONA } from "./helpers";
+import { signIn, goTo, apiSignIn, PERSONA, UID } from "./helpers";
 
 /**
  * Aux tabs smoke: Investigations, Evidence, Audit and Settings render real
@@ -8,14 +8,16 @@ import { signIn, goTo, PERSONA } from "./helpers";
  */
 test.describe("console — aux tabs", () => {
   test("investigations, evidence, audit and settings render", async ({ page, request }) => {
-    const c4 = { "content-type": "application/json", "x-user-id": "4", "x-user-role": "customer" };
-    const d = await (await request.post("/api/disputes", { headers: c4, data: { transactionId: 90, reason: "x", idempotencyKey: `tabs-${Date.now()}` } })).json();
+    await apiSignIn(request, UID.customer4);
+    const d = await (await request.post("/api/disputes", { data: { transactionId: 90, reason: "x", idempotencyKey: `tabs-${Date.now()}` } })).json();
     expect(d.dispute, JSON.stringify(d)).toBeTruthy();
-    await request.post(`/api/disputes/${d.dispute.id}/evidence`, {
-      headers: c4,
-      data: { upload: { name: "statement.pdf", declaredType: "application/pdf", detectedType: "application/pdf", sizeBytes: 20480 }, scan: "clean" },
+    // Evidence is now a real validated file upload (multipart). A 1x1 PNG is valid.
+    const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
+    const ev = await request.post(`/api/disputes/${d.dispute.id}/evidence`, {
+      multipart: { file: { name: "evidence.png", mimeType: "image/png", buffer: png } },
     });
-    await request.post(`/api/disputes/${d.dispute.id}/investigate`, { headers: c4 });
+    expect(ev.ok(), await ev.text()).toBeTruthy();
+    await request.post(`/api/disputes/${d.dispute.id}/investigate`, {});
 
     await signIn(page, PERSONA.analyst);
 

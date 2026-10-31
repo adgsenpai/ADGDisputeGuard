@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { signIn, PERSONA } from "./helpers";
+import { signIn, apiSignIn, PERSONA, UID } from "./helpers";
 
 /**
  * Dashboard GUI: the KPI tiles and the three charts render for a signed-in
@@ -8,9 +8,8 @@ import { signIn, PERSONA } from "./helpers";
  */
 test.describe("console — dashboard", () => {
   test("renders KPI tiles and charts", async ({ page, request }) => {
-    const cust = { "content-type": "application/json", "x-user-id": "1", "x-user-role": "customer" };
+    await apiSignIn(request, UID.customer);
     await request.post("/api/disputes", {
-      headers: cust,
       data: { transactionId: 42, reason: "x", idempotencyKey: `dash-${Date.now()}` },
     });
 

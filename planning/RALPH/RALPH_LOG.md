@@ -73,6 +73,7 @@ South African data; 27 TS + 9 Playwright GUI tests green, showcase re-recorded.
 | 31 | Tamper-evident audit log | `run-regression.sh` green (34 TS, 10 GUI); SHA-256 hash-chained audit events, `/api/audit/verify`, integrity badge; chain + tamper-detection unit tests | `1035568` |
 | 32 | Case report PDF export | `run-regression.sh` green (36 TS, 12 GUI); `/api/disputes/[id]/report` renders audit-ready LaTeX + pdflatex PDF with reason code, audit trail, evidence, chain head; download action; render + API tests | `a5ff2a7` |
 | 33 | Multi-language console (EN/isiZulu/Afrikaans) | `run-regression.sh` green (39 TS, 13 GUI); i18n layer + language switcher, translated nav/views/KPIs/login; completeness + e2e tests | `4ae411e` |
+| 34 | Real authentication + evidence attachments (session auth, item 6) | `run-regression.sh` green (44 TS, 13 GUI); SQLite sessions/accounts, cookie auth + origin check, server-verified roles, file-upload evidence; e2e migrated to cookie auth | `pending` |
 
 ## Completion
 

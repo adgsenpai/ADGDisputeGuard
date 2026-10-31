@@ -5,8 +5,10 @@ import { readJson, userFromRequest } from "@/lib/api/request";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const result = listDisputes(getStore());
+export async function GET(req: Request) {
+  const user = userFromRequest(req);
+  const disputes = getStore().allDisputes().filter(d => user.role !== "customer" || getStore().getTransaction(d.transactionId)?.ownerId === user.id);
+  const result = { status: 200, body: { disputes } };
   return NextResponse.json(result.body, { status: result.status });
 }
 

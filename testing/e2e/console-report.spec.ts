@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { signIn, goTo, PERSONA } from "./helpers";
+import { signIn, goTo, apiSignIn, PERSONA, UID } from "./helpers";
 
 /**
  * Audit-ready case report PDF: the API compiles a per-case PDF (via pdflatex)
@@ -7,11 +7,11 @@ import { signIn, goTo, PERSONA } from "./helpers";
  */
 test.describe("console — case report PDF", () => {
   test("the API returns a PDF for a case", async ({ request }) => {
-    const c3 = { "content-type": "application/json", "x-user-id": "3", "x-user-role": "customer" };
-    const d = await (await request.post("/api/disputes", { headers: c3, data: { transactionId: 80, reason: "I never received this order.", idempotencyKey: `rep-${Date.now()}` } })).json();
+    await apiSignIn(request, UID.customer3);
+    const d = await (await request.post("/api/disputes", { data: { transactionId: 80, reason: "I never received this order.", idempotencyKey: `rep-${Date.now()}` } })).json();
     expect(d.dispute, JSON.stringify(d)).toBeTruthy();
 
-    const res = await request.get(`/api/disputes/${d.dispute.id}/report`, { headers: { "x-user-id": "3", "x-user-role": "customer" } });
+    const res = await request.get(`/api/disputes/${d.dispute.id}/report`);
     expect(res.status()).toBe(200);
     expect(res.headers()["content-type"]).toContain("pdf");
     const body = await res.body();

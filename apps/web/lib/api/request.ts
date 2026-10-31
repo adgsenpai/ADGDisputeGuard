@@ -1,12 +1,14 @@
 // Helpers shared by the Next.js route handlers.
 
-import { resolveUser } from "./store";
+import { authenticatedUser } from "../auth/session";
 import type { User } from "../domain/access";
 
 // The authenticated user, taken from request headers in this demo. A real
 // deployment would derive this from a verified session, never from the body.
 export function userFromRequest(req: Request): User {
-  return resolveUser(req.headers.get("x-user-id"), req.headers.get("x-user-role"));
+  const user = authenticatedUser(req);
+  if (!user) throw new Error("Authentication required");
+  return user;
 }
 
 // A random, server-side storage name for an uploaded file (never the client

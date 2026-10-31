@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { signIn, switchPersona, goTo, PERSONA } from "./helpers";
+import { signIn, switchPersona, goTo, apiSignIn, PERSONA, UID } from "./helpers";
 
 /**
  * Console lifecycle GUI flow: role-gated transitions, evidence upload, and the
@@ -16,7 +16,7 @@ function stateBadge(page: import("@playwright/test").Page) {
 }
 
 test.describe("console — lifecycle, evidence and audit", () => {
-  test("customer submits evidence; analyst drives the dispute to approval", async ({ page }) => {
+  test("role-gated actions; analyst drives the dispute to approval", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (err) => pageErrors.push(err.message));
 
@@ -29,21 +29,16 @@ test.describe("console — lifecycle, evidence and audit", () => {
     await goTo(page, "disputes");
     await expect(stateBadge(page)).toHaveText("submitted");
 
-    // Role gating in the UI: the customer may only submit evidence.
-    await expect(page.getByRole("button", { name: "evidence submitted" })).toBeVisible();
+    // Role gating: only valid actions for the role+state are shown. A customer
+    // has no lifecycle actions on a freshly submitted case (and never "approve").
     await expect(page.getByRole("button", { name: "approve", exact: true })).toHaveCount(0);
-
-    // Evidence upload happy path.
-    await page.getByRole("button", { name: "Upload sample evidence" }).click();
-    await expect(page.locator(".toast--ok")).toContainText(/Evidence stored/i);
+    await expect(page.getByRole("button", { name: "begin review" })).toHaveCount(0);
 
     // Sign out and sign in as the analyst — the staff transition controls appear.
     await switchPersona(page, PERSONA.analyst);
     await goTo(page, "disputes");
     await page.locator('.trow:has-text("(tx 43)")').getByRole("button", { name: "Inspect" }).first().click();
     await expect(page.getByRole("button", { name: "begin review" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "approve", exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "evidence submitted" })).toHaveCount(0);
 
     const auditCountBefore = await page.locator(".trail li").count();
 
@@ -72,17 +67,15 @@ test.describe("console — lifecycle, evidence and audit", () => {
     // Open a dispute on the Bolt transaction via the API, then attempt a
     // transition with a stale expectedVersion — the optimistic-concurrency
     // guard rejects it.
-    const headers = { "content-type": "application/json", "x-user-id": "1", "x-user-role": "customer" };
+    await apiSignIn(request, UID.customer);
     const create = await request.post("/api/disputes", {
-      headers,
       data: { transactionId: 62, reason: "double charge", idempotencyKey: `e2e-stale-${Date.now()}` },
     });
     expect(create.ok()).toBeTruthy();
     const { dispute } = await create.json();
 
-    const staff = { "content-type": "application/json", "x-user-id": "9", "x-user-role": "analyst" };
+    await apiSignIn(request, UID.analyst);
     const stale = await request.post(`/api/disputes/${dispute.id}/transition`, {
-      headers: staff,
       data: { event: "begin_review", expectedVersion: dispute.version + 5 },
     });
     expect(stale.status()).toBe(409);

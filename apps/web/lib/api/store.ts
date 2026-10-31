@@ -1,9 +1,10 @@
+import { loadState, saveState } from "../auth/database";
 // Shared in-memory store for the demo API, seeded with sample transactions.
 // A module-level singleton: state lives for the life of the server instance.
 // This is a demonstration store, not a production database.
 
 import { DisputeStore } from "../domain/service";
-import type { Role, User } from "../domain/access";
+import type { User } from "../domain/access";
 
 export type SeedTransaction = {
   id: number;
@@ -71,20 +72,18 @@ export const DEMO_USERS: Record<string, User> = {
 // The server decides the acting user from the authenticated identity, never
 // from a transaction id in the request body. For this demo we read a signed-in
 // user from headers; absent/unknown headers fall back to the demo customer.
-export function resolveUser(userId: string | null, role: string | null): User {
+export function resolveUser(userId: string | null, _role: string | null): User {
   if (userId && DEMO_USERS[userId]) return DEMO_USERS[userId];
-  if (userId && role) {
-    const r = role as Role;
-    if (r === "customer" || r === "analyst" || r === "admin") {
-      return { id: Number(userId), role: r };
-    }
-  }
   return DEMO_USERS["1"];
 }
 
 // The process-wide singleton used by the route handlers.
-let singleton: DisputeStore | null = null;
+const shared = globalThis as typeof globalThis & { dgStore?: DisputeStore };
 export function getStore(): DisputeStore {
-  if (!singleton) singleton = createSeededStore();
-  return singleton;
+  if (!shared.dgStore) {
+    const saved = loadState("disputes") as ReturnType<DisputeStore["snapshot"]> | undefined;
+    shared.dgStore = saved ? DisputeStore.restore(saved) : createSeededStore();
+    shared.dgStore.setPersistence(() => saveState("disputes", shared.dgStore!.snapshot()));
+  }
+  return shared.dgStore;
 }

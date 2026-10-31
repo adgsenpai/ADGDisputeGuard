@@ -54,7 +54,5 @@ export function clearIdentity(): void {
 export function authHeaders(identity: Identity): Record<string, string> {
   return {
     "content-type": "application/json",
-    "x-user-id": String(identity.userId),
-    "x-user-role": identity.role,
   };
 }

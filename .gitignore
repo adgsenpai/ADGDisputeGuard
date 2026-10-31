@@ -30,3 +30,7 @@ testing/media/playwright-report/
 test-results/
 playwright-report/
 .playwright/
+
+# Local account, evidence and workspace storage
+**/.data/
+tmp/
