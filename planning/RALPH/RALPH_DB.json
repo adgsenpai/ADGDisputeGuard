@@ -39,7 +39,7 @@
     { "id": "saas-dashboard", "status": "done", "commit": "7f0864b" },
     { "id": "saas-transactions-tab", "status": "done", "commit": "974ca5c" },
     { "id": "saas-disputes-workspace", "status": "done", "commit": "9cddee5" },
-    { "id": "saas-aux-tabs", "status": "todo", "commit": null },
+    { "id": "saas-aux-tabs", "status": "done", "commit": "pending" },
     { "id": "saas-showcase-docs", "status": "todo", "commit": null }
   ],
   "iterations": []

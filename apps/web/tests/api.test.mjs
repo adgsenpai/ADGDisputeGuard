@@ -10,6 +10,8 @@ import {
   submitEvidence,
   listTransactions,
   listAudit,
+  listEvidence,
+  listInvestigations,
   hashRequest,
 } from "../lib/api/handlers.ts";
 
@@ -108,6 +110,24 @@ test("listAudit scopes events by role", () => {
   const mine = listAudit(store, CUSTOMER, txs).body.events;
   assert.equal(mine.length, 1);
   assert.equal(mine[0].detail.kind, "dispute-created");
+});
+
+test("listEvidence and listInvestigations scope by role", () => {
+  const store = createSeededStore();
+  const txs = SEED_TRANSACTIONS.map((t) => ({ id: t.id, ownerId: t.ownerId }));
+  const created = createDispute(store, CUSTOMER, { transactionId: 42, idempotencyKey: "k" }).body.dispute;
+  const good = { name: "s.pdf", declaredType: "application/pdf", detectedType: "application/pdf", sizeBytes: 2048 };
+  submitEvidence(store, CUSTOMER, created.id, { upload: good, scan: "clean" }, "srv-ev-1");
+  store.recordInvestigation({ disputeId: created.id, usedModel: false, summary: "s", stage: "review", observations: 3, toolCalls: 3 });
+
+  // Owner and staff see the records; another customer does not.
+  assert.equal(listEvidence(store, CUSTOMER, txs).body.evidence.length, 1);
+  assert.equal(listEvidence(store, ANALYST, txs).body.evidence.length, 1);
+  assert.equal(listEvidence(store, STRANGER, txs).body.evidence.length, 0);
+  assert.equal(listEvidence(store, CUSTOMER, txs).body.evidence[0].storageName, "srv-ev-1");
+
+  assert.equal(listInvestigations(store, CUSTOMER, txs).body.investigations.length, 1);
+  assert.equal(listInvestigations(store, STRANGER, txs).body.investigations.length, 0);
 });
 
 test("submitEvidence validates uploads", () => {

@@ -29,6 +29,8 @@ type Txn = { id: number; ownerId?: number; merchant: string; category: string; a
 type Dispute = { id: number; transactionId: number; state: string; version: number };
 type AuditEvent = { seq: number; disputeId?: number; actorId: number; detail: { kind: string; from?: string; to?: string; event?: string; state?: string } };
 type Investigation = { usedModel: boolean; summary: string; stage: string; observations: number; toolCalls: number; history: string[] };
+type EvidenceRec = { seq: number; disputeId: number; actorId: number; storageName: string; sizeBytes: number; detectedType: string };
+type InvRec = { seq: number; disputeId: number; usedModel: boolean; summary: string; stage: string; observations: number; toolCalls: number };
 
 const ANALYST_EVENTS = ["begin_review", "request_evidence", "begin_investigation", "approve", "reject"];
 const ACTIVE = (s: string) => s !== "approved" && s !== "rejected";
@@ -76,6 +78,8 @@ function ConsoleApp({ identity, onSignOut }: { identity: Identity; onSignOut: ()
   const [txns, setTxns] = useState<Txn[]>([]);
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [allEvents, setAllEvents] = useState<AuditEvent[]>([]);
+  const [evidenceLog, setEvidenceLog] = useState<EvidenceRec[]>([]);
+  const [investigationsLog, setInvestigationsLog] = useState<InvRec[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
   const [events, setEvents] = useState<AuditEvent[]>([]);
   const [investigation, setInvestigation] = useState<Investigation | null>(null);
@@ -117,6 +121,14 @@ function ConsoleApp({ identity, onSignOut }: { identity: Identity; onSignOut: ()
     const res = await fetch("/api/audit", { headers });
     setAllEvents((await res.json()).events ?? []);
   }, [headers]);
+  const loadEvidence = useCallback(async () => {
+    const res = await fetch("/api/evidence", { headers });
+    setEvidenceLog((await res.json()).evidence ?? []);
+  }, [headers]);
+  const loadInvestigations = useCallback(async () => {
+    const res = await fetch("/api/investigations", { headers });
+    setInvestigationsLog((await res.json()).investigations ?? []);
+  }, [headers]);
   const loadDetail = useCallback(
     async (id: number) => {
       const res = await fetch(`/api/disputes/${id}`, { headers });
@@ -129,7 +141,9 @@ function ConsoleApp({ identity, onSignOut }: { identity: Identity; onSignOut: ()
     loadTxns();
     loadDisputes();
     loadAudit();
-  }, [loadTxns, loadDisputes, loadAudit]);
+    loadEvidence();
+    loadInvestigations();
+  }, [loadTxns, loadDisputes, loadAudit, loadEvidence, loadInvestigations]);
 
   useEffect(() => {
     if (selected !== null) {
@@ -190,7 +204,10 @@ function ConsoleApp({ identity, onSignOut }: { identity: Identity; onSignOut: ()
       });
       const data = await res.json();
       if (!res.ok) flash("err", `Evidence refused: ${data.error}`);
-      else flash("ok", `Evidence stored as ${data.receipt.storageName}.`);
+      else {
+        flash("ok", `Evidence stored as ${data.receipt.storageName}.`);
+        await loadEvidence();
+      }
     } finally {
       setBusy(false);
     }
@@ -203,7 +220,10 @@ function ConsoleApp({ identity, onSignOut }: { identity: Identity; onSignOut: ()
       const res = await fetch(`/api/disputes/${selectedDispute.id}/investigate`, { method: "POST", headers });
       const data = await res.json();
       if (!res.ok) flash("err", `Investigation failed: ${data.error}`);
-      else setInvestigation(data);
+      else {
+        setInvestigation(data);
+        await loadInvestigations();
+      }
     } finally {
       setBusy(false);
     }
@@ -222,6 +242,8 @@ function ConsoleApp({ identity, onSignOut }: { identity: Identity; onSignOut: ()
     txns,
     disputes,
     allEvents,
+    evidenceLog,
+    investigationsLog,
     events,
     txnById,
     selected,
@@ -257,6 +279,8 @@ type Shared = {
   txns: Txn[];
   disputes: Dispute[];
   allEvents: AuditEvent[];
+  evidenceLog: EvidenceRec[];
+  investigationsLog: InvRec[];
   events: AuditEvent[];
   txnById: Map<number, Txn>;
   selected: number | null;
@@ -609,48 +633,81 @@ function CaseWorkspace({ s, dispute }: { s: Shared; dispute: Dispute }) {
 
 /* ---------------- Investigations ---------------- */
 function InvestigationsView(s: Shared) {
+  const runs = [...s.investigationsLog].sort((a, b) => b.seq - a.seq);
   return (
-    <section className="card">
-      <div className="card__title">Investigations</div>
-      <div className="note" style={{ marginTop: 0 }}>
-        The bounded investigation runs inside a case: an allowlisted, read-only loop with an iteration and tool-call budget enforced
-        in application code, backed by a local Ollama model with a deterministic fallback. Open a case to run one.
-      </div>
-      {s.disputes.length === 0 && <div className="empty">No cases to investigate yet.</div>}
-      <div className="table">
-        {s.disputes.map((d) => (
-          <div className="trow" key={d.id}>
-            <div className="trow__merch">
-              <div className="trow__name">Dispute #{d.id} <span className="mono">(tx {d.transactionId})</span></div>
-              <div className="trow__meta">{s.txnById.get(d.transactionId)?.merchant ?? "—"}</div>
+    <div className="stack">
+      <section className="card">
+        <div className="card__title">Recent investigations</div>
+        <div className="note" style={{ marginTop: 0, marginBottom: 12 }}>
+          Each run is an allowlisted, read-only loop with an iteration and tool-call budget enforced in application code, backed by a
+          local Ollama model with a deterministic fallback.
+        </div>
+        {runs.length === 0 && <div className="empty">No investigations run yet — open a case and run one.</div>}
+        <div className="table">
+          {runs.map((r) => (
+            <div className="trow trow--tx" key={r.seq}>
+              <div className="trow__merch">
+                <div className="trow__name">
+                  Dispute #{r.disputeId} <span className="mono">· stage {r.stage}</span>
+                </div>
+                <div className="trow__meta">{r.summary}</div>
+              </div>
+              <span className={`riskchip ${r.usedModel ? "riskchip--medium" : "riskchip--low"}`}>
+                {r.usedModel ? "model" : "fallback"}
+              </span>
+              <span className="mono">{r.observations} obs · {r.toolCalls} calls</span>
+              <button className="btn btn--ghost" onClick={() => s.inspect(r.disputeId)}>Open case</button>
             </div>
-            <span className={badgeClass(d.state)}>{nice(d.state)}</span>
-            <button className="btn btn--ghost" onClick={() => s.inspect(d.id)}>Open in workspace</button>
-          </div>
-        ))}
-      </div>
-    </section>
+          ))}
+        </div>
+      </section>
+
+      <section className="card">
+        <div className="card__title">Launch an investigation</div>
+        {s.disputes.length === 0 && <div className="empty">No cases to investigate yet.</div>}
+        <div className="table">
+          {s.disputes.map((d) => (
+            <div className="trow" key={d.id}>
+              <div className="trow__merch">
+                <div className="trow__name">Dispute #{d.id} <span className="mono">(tx {d.transactionId})</span></div>
+                <div className="trow__meta">{s.txnById.get(d.transactionId)?.merchant ?? "—"}</div>
+              </div>
+              <span className={badgeClass(d.state)}>{nice(d.state)}</span>
+              <button className="btn btn--ghost" onClick={() => s.inspect(d.id)}>Open in workspace</button>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }
 
 /* ---------------- Evidence ---------------- */
+function kb(bytes: number) {
+  return `${Math.round(bytes / 1024)} KB`;
+}
 function EvidenceView(s: Shared) {
+  const rows = [...s.evidenceLog].sort((a, b) => b.seq - a.seq);
   return (
     <section className="card">
-      <div className="card__title">Evidence</div>
-      <div className="note" style={{ marginTop: 0 }}>
-        Evidence is validated server-side (size, declared vs detected type, and a required clean scan) and attached to a case with a
-        randomised storage name. Open a case to upload and review supporting documents.
+      <div className="card__title">Evidence register</div>
+      <div className="note" style={{ marginTop: 0, marginBottom: 12 }}>
+        Evidence is validated server-side (size, declared vs detected type, and a required clean scan) and stored under a randomised
+        name. Open a case to upload supporting documents.
       </div>
-      {s.disputes.length === 0 && <div className="empty">No cases yet.</div>}
+      {rows.length === 0 && <div className="empty">No evidence uploaded yet.</div>}
       <div className="table">
-        {s.disputes.map((d) => (
-          <div className="trow" key={d.id}>
+        {rows.map((e) => (
+          <div className="trow trow--tx" key={e.seq}>
             <div className="trow__merch">
-              <div className="trow__name">Dispute #{d.id} <span className="mono">(tx {d.transactionId})</span></div>
-              <div className="trow__meta">{s.txnById.get(d.transactionId)?.merchant ?? "—"}</div>
+              <div className="trow__name">
+                Dispute #{e.disputeId} <span className="mono">· {e.storageName}</span>
+              </div>
+              <div className="trow__meta">{s.txnById.get(s.disputes.find((d) => d.id === e.disputeId)?.transactionId ?? -1)?.merchant ?? "—"}</div>
             </div>
-            <button className="btn btn--ghost" onClick={() => s.inspect(d.id)}>Open case</button>
+            <span className="riskchip riskchip--low">{e.detectedType}</span>
+            <span className="mono">{kb(e.sizeBytes)}</span>
+            <button className="btn btn--ghost" onClick={() => s.inspect(e.disputeId)}>Open case</button>
           </div>
         ))}
       </div>

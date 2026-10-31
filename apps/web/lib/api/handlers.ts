@@ -150,5 +150,41 @@ export function submitEvidence(
     };
     return { status: map[result.kind] ?? 400, body: { error: result.kind, detail: result } };
   }
+  store.recordEvidence({
+    disputeId: id,
+    actorId: user.id,
+    storageName: result.storageName,
+    sizeBytes: result.sizeBytes,
+    detectedType: result.detectedType,
+  });
   return { status: 201, body: { receipt: result } };
+}
+
+// Evidence/investigation registers, scoped by role like the audit log.
+function scopedByDispute<T extends { disputeId: number }>(
+  all: T[],
+  user: User,
+  store: DisputeStore,
+  transactions: { id: number; ownerId: number }[],
+): T[] {
+  if (user.role !== "customer") return all;
+  const ownedTx = new Set(transactions.filter((t) => t.ownerId === user.id).map((t) => t.id));
+  const mine = new Set(store.allDisputes().filter((d) => ownedTx.has(d.transactionId)).map((d) => d.id));
+  return all.filter((r) => mine.has(r.disputeId));
+}
+
+export function listEvidence(
+  store: DisputeStore,
+  user: User,
+  transactions: { id: number; ownerId: number }[],
+): ApiResult {
+  return { status: 200, body: { evidence: scopedByDispute(store.allEvidence(), user, store, transactions) } };
+}
+
+export function listInvestigations(
+  store: DisputeStore,
+  user: User,
+  transactions: { id: number; ownerId: number }[],
+): ApiResult {
+  return { status: 200, body: { investigations: scopedByDispute(store.allInvestigations(), user, store, transactions) } };
 }

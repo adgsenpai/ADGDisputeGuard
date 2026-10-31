@@ -36,6 +36,14 @@ export async function runInvestigation(
   const context = buildCaseContext(store, disputeId);
   if (!context) return { status: 404, body: { error: "unknown-dispute" } };
   const result: InvestigationResult = await investigate(context, options);
+  store.recordInvestigation({
+    disputeId,
+    usedModel: result.usedModel,
+    summary: result.summary,
+    stage: result.loop.stage,
+    observations: result.loop.observations,
+    toolCalls: result.loop.toolCalls,
+  });
   return {
     status: 200,
     body: {

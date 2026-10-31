@@ -44,13 +44,48 @@ export function isCreateError(v: CreateOutcome | CreateError): v is CreateError 
   return (v as CreateError).kind !== undefined && "replayed" in (v as object) === false;
 }
 
+export type EvidenceLogEntry = {
+  seq: number;
+  disputeId: number;
+  actorId: number;
+  storageName: string;
+  sizeBytes: number;
+  detectedType: string;
+};
+export type InvestigationLogEntry = {
+  seq: number;
+  disputeId: number;
+  usedModel: boolean;
+  summary: string;
+  stage: string;
+  observations: number;
+  toolCalls: number;
+};
+
 export class DisputeStore {
   private transactions = new Map<number, Transaction>();
   private disputes = new Map<number, Dispute>();
   private idempotency = new Map<string, { requestHash: string; disputeId: number }>();
   private auditLog: AuditEvent[] = [];
+  private evidenceLog: EvidenceLogEntry[] = [];
+  private investigationLog: InvestigationLogEntry[] = [];
   private nextDisputeId = 1;
   private nextSeq = 1;
+  private nextEvidenceSeq = 1;
+  private nextInvestigationSeq = 1;
+
+  recordEvidence(e: Omit<EvidenceLogEntry, "seq">): void {
+    this.evidenceLog.push({ seq: this.nextEvidenceSeq++, ...e });
+  }
+  allEvidence(): EvidenceLogEntry[] {
+    return [...this.evidenceLog];
+  }
+  recordInvestigation(i: Omit<InvestigationLogEntry, "seq">): void {
+    this.investigationLog.push({ seq: this.nextInvestigationSeq++, ...i });
+  }
+  allInvestigations(): InvestigationLogEntry[] {
+    return [...this.investigationLog];
+  }
 
   addTransaction(tx: Transaction): void {
     this.transactions.set(tx.id, tx);
