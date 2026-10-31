@@ -78,6 +78,14 @@
 .topbar__whotext { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
 .topbar__whoname { font-size: 13px; font-weight: 700; }
 
+.langselect {
+  font: inherit; font-size: 13px; font-weight: 600; color: var(--dg-text);
+  background: var(--dg-surface); border: 1px solid var(--dg-border); border-radius: var(--dg-r-sm);
+  padding: 7px 10px; cursor: pointer;
+}
+.langselect:focus-visible { outline: 2px solid var(--dg-accent); outline-offset: 1px; }
+.login__brandrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
 .iconbtn {
   display: inline-flex; align-items: center; justify-content: center;
   width: 36px; height: 36px; border-radius: var(--dg-r-sm); cursor: pointer;

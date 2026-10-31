@@ -3,6 +3,7 @@
 import Avatar from "@/components/avatar";
 import { PERSONAS, ROLE_LABELS, type Persona, type PersonaRole } from "@/lib/personas";
 import { identityFromPersona, saveIdentity, type Identity } from "@/lib/identity";
+import { LANGS, type Lang, type T } from "@/lib/i18n";
 
 const GROUPS: { role: PersonaRole; blurb: string }[] = [
   { role: "customer", blurb: "Cardholders querying their own payments" },
@@ -10,7 +11,17 @@ const GROUPS: { role: PersonaRole; blurb: string }[] = [
   { role: "admin", blurb: "Full oversight of cases, audit and config" },
 ];
 
-export default function Login({ onSignedIn }: { onSignedIn: (id: Identity) => void }) {
+export default function Login({
+  onSignedIn,
+  t,
+  lang,
+  onLang,
+}: {
+  onSignedIn: (id: Identity) => void;
+  t: T;
+  lang: Lang;
+  onLang: (l: Lang) => void;
+}) {
   function pick(p: Persona) {
     const id = identityFromPersona(p);
     saveIdentity(id);
@@ -21,15 +32,19 @@ export default function Login({ onSignedIn }: { onSignedIn: (id: Identity) => vo
     <main className="login">
       <div className="login__inner">
         <header className="login__head">
-          <div className="login__brand">
-            <img src="/brand/disputeguard-logo.svg" alt="" className="login__logo" />
-            <span>DisputeGuard</span>
+          <div className="login__brandrow">
+            <div className="login__brand">
+              <img src="/brand/disputeguard-logo.svg" alt="" className="login__logo" />
+              <span>DisputeGuard</span>
+            </div>
+            <select className="langselect" aria-label="Language" value={lang} onChange={(e) => onLang(e.target.value as Lang)}>
+              {LANGS.map((l) => (
+                <option key={l.code} value={l.code}>{l.label}</option>
+              ))}
+            </select>
           </div>
-          <h1 className="login__title">Choose who to sign in as</h1>
-          <p className="login__sub">
-            Passwordless demo sign-in. Pick a persona — your{" "}
-            <strong>role (RBAC)</strong> comes from who you choose. No real people or real money.
-          </p>
+          <h1 className="login__title">{t("login.title")}</h1>
+          <p className="login__sub">{t("login.sub")} No real people or real money.</p>
         </header>
 
         {GROUPS.map((g) => {

@@ -46,7 +46,7 @@
     { "id": "bank-reason-codes-sla", "status": "done", "commit": "29bf77e" },
     { "id": "bank-tamper-audit", "status": "done", "commit": "1035568" },
     { "id": "bank-case-pdf", "status": "done", "commit": "a5ff2a7" },
-    { "id": "bank-i18n", "status": "todo", "commit": null },
+    { "id": "bank-i18n", "status": "done", "commit": "pending" },
     { "id": "bank-polish-theme-palette", "status": "todo", "commit": null },
     { "id": "bank-session-auth", "status": "todo", "commit": null },
     { "id": "bank-showcase-docs", "status": "todo", "commit": null }

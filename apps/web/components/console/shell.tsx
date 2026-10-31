@@ -5,6 +5,7 @@ import Avatar from "@/components/avatar";
 import Icon, { type IconName } from "@/components/console/icons";
 import { ROLE_LABELS } from "@/lib/personas";
 import type { Identity } from "@/lib/identity";
+import { LANGS, type Lang, type T } from "@/lib/i18n";
 
 export type ViewKey =
   | "dashboard"
@@ -41,6 +42,9 @@ export default function Shell({
   onNavigate,
   onSignOut,
   badges,
+  t,
+  lang,
+  onLang,
   children,
 }: {
   identity: Identity;
@@ -48,10 +52,12 @@ export default function Shell({
   onNavigate: (v: ViewKey) => void;
   onSignOut: () => void;
   badges?: Partial<Record<ViewKey, number>>;
+  t: T;
+  lang: Lang;
+  onLang: (l: Lang) => void;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const meta = VIEW_META[view];
 
   function go(v: ViewKey) {
     onNavigate(v);
@@ -67,7 +73,7 @@ export default function Shell({
           <img src="/brand/disputeguard-logo.svg" alt="" className="sidebar__logo" />
           <div>
             <div className="sidebar__brandname">DisputeGuard</div>
-            <div className="sidebar__brandsub">Console</div>
+            <div className="sidebar__brandsub">{t("brand.console")}</div>
           </div>
         </div>
 
@@ -82,7 +88,7 @@ export default function Shell({
               onClick={() => go(item.key)}
             >
               <Icon name={item.icon} />
-              <span>{item.label}</span>
+              <span>{t(`nav.${item.key}`, item.label)}</span>
               {badges?.[item.key] ? <span className="nav__badge">{badges[item.key]}</span> : null}
             </button>
           ))}
@@ -96,7 +102,7 @@ export default function Shell({
               <span className={`rolepill rolepill--${identity.role}`}>{ROLE_LABELS[identity.role]}</span>
             </div>
           </div>
-          <button className="iconbtn" onClick={onSignOut} aria-label="Sign out" title="Sign out">
+          <button className="iconbtn" onClick={onSignOut} aria-label={t("action.signout")} title={t("action.signout")}>
             <Icon name="logout" />
           </button>
         </div>
@@ -108,14 +114,24 @@ export default function Shell({
             <Icon name="menu" />
           </button>
           <div className="topbar__titles">
-            <h1 className="topbar__title">{meta.title}</h1>
-            <p className="topbar__sub">{meta.subtitle}</p>
+            <h1 className="topbar__title">{t(`view.${view}.title`)}</h1>
+            <p className="topbar__sub">{t(`view.${view}.sub`)}</p>
           </div>
           <div className="topbar__spacer" />
           <div className="searchbox" aria-hidden="true">
             <Icon name="search" size={16} />
-            <span>Search…</span>
+            <span>{t("action.search")}</span>
           </div>
+          <select
+            className="langselect"
+            aria-label="Language"
+            value={lang}
+            onChange={(e) => onLang(e.target.value as Lang)}
+          >
+            {LANGS.map((l) => (
+              <option key={l.code} value={l.code}>{l.label}</option>
+            ))}
+          </select>
           <div className="topbar__who">
             <Avatar seed={identity.name} initials={identity.initials} size={34} />
             <div className="topbar__whotext">

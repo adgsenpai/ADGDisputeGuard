@@ -15,6 +15,7 @@ import {
 import { ROLE_LABELS } from "@/lib/personas";
 import { advisoryScore, riskBand } from "@/lib/risk-advisory";
 import { reasonCode as lookupReasonCode, slaDaysRemaining } from "@/lib/chargeback";
+import { makeT, loadLang, saveLang, type Lang, type T } from "@/lib/i18n";
 
 const STATE_COLOR: Record<string, string> = {
   submitted: "var(--dg-state-submitted)",
@@ -52,19 +53,30 @@ function nice(s: string) {
 export default function ConsolePage() {
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [ready, setReady] = useState(false);
+  const [lang, setLang] = useState<Lang>("en");
 
   useEffect(() => {
     setIdentity(loadIdentity());
+    setLang(loadLang());
     setReady(true);
   }, []);
 
+  const t = useMemo(() => makeT(lang), [lang]);
+  const onLang = useCallback((l: Lang) => {
+    setLang(l);
+    saveLang(l);
+  }, []);
+
   if (!ready) return <main className="console--loading" aria-busy="true" />;
-  if (!identity) return <Login onSignedIn={setIdentity} />;
+  if (!identity) return <Login onSignedIn={setIdentity} t={t} lang={lang} onLang={onLang} />;
 
   return (
     <ConsoleApp
       key={identity.userId}
       identity={identity}
+      t={t}
+      lang={lang}
+      onLang={onLang}
       onSignOut={() => {
         clearIdentity();
         setIdentity(null);
@@ -74,7 +86,19 @@ export default function ConsolePage() {
 }
 
 /* ---------------- app ---------------- */
-function ConsoleApp({ identity, onSignOut }: { identity: Identity; onSignOut: () => void }) {
+function ConsoleApp({
+  identity,
+  onSignOut,
+  t,
+  lang,
+  onLang,
+}: {
+  identity: Identity;
+  onSignOut: () => void;
+  t: T;
+  lang: Lang;
+  onLang: (l: Lang) => void;
+}) {
   const [view, setView] = useState<ViewKey>("dashboard");
   const [txns, setTxns] = useState<Txn[]>([]);
   const [disputes, setDisputes] = useState<Dispute[]>([]);
@@ -250,6 +274,7 @@ function ConsoleApp({ identity, onSignOut }: { identity: Identity; onSignOut: ()
 
   const shared = {
     identity,
+    t,
     txns,
     disputes,
     allEvents,
@@ -274,7 +299,7 @@ function ConsoleApp({ identity, onSignOut }: { identity: Identity; onSignOut: ()
   };
 
   return (
-    <Shell identity={identity} view={view} onNavigate={navigate} onSignOut={onSignOut} badges={badges}>
+    <Shell identity={identity} view={view} onNavigate={navigate} onSignOut={onSignOut} badges={badges} t={t} lang={lang} onLang={onLang}>
       {toast && <div className={`toast toast--${toast.kind}`}>{toast.text}</div>}
       {view === "dashboard" && <Dashboard {...shared} />}
       {view === "transactions" && <TransactionsView {...shared} />}
@@ -289,6 +314,7 @@ function ConsoleApp({ identity, onSignOut }: { identity: Identity; onSignOut: ()
 
 type Shared = {
   identity: Identity;
+  t: T;
   txns: Txn[];
   disputes: Dispute[];
   allEvents: AuditEvent[];
@@ -355,21 +381,21 @@ function Dashboard(s: Shared) {
   const avgRisk = scores.length ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 100) : null;
 
   const tiles = [
-    { label: "Transactions", value: String(s.txns.length), tone: "info" },
-    { label: "Open disputes", value: String(open), tone: "warning" },
-    { label: "Approved", value: String(approved), tone: "success" },
-    { label: "Rejected", value: String(rejected), tone: "danger" },
-    { label: "Avg advisory risk", value: avgRisk === null ? "—" : `${avgRisk}%`, tone: "violet" },
-    { label: "Disputed value", value: zar(disputedMinor), tone: "accent", wide: true },
+    { k: "kpi.transactions", value: String(s.txns.length), tone: "info" },
+    { k: "kpi.open", value: String(open), tone: "warning" },
+    { k: "kpi.approved", value: String(approved), tone: "success" },
+    { k: "kpi.rejected", value: String(rejected), tone: "danger" },
+    { k: "kpi.avgrisk", value: avgRisk === null ? "—" : `${avgRisk}%`, tone: "violet" },
+    { k: "kpi.disputed", value: zar(disputedMinor), tone: "accent", wide: true },
   ];
 
   return (
     <div className="stack">
       <div className="kpis">
-        {tiles.map((t) => (
-          <div className={`kpi kpi--${t.tone} ${t.wide ? "kpi--wide" : ""}`} key={t.label}>
-            <div className="kpi__label">{t.label}</div>
-            <div className="kpi__value">{t.value}</div>
+        {tiles.map((tile) => (
+          <div className={`kpi kpi--${tile.tone} ${tile.wide ? "kpi--wide" : ""}`} key={tile.k}>
+            <div className="kpi__label">{s.t(tile.k)}</div>
+            <div className="kpi__value">{tile.value}</div>
           </div>
         ))}
       </div>
