@@ -468,14 +468,52 @@ function Stepper({ state }: { state: string }) {
   );
 }
 
+const QUEUE_FILTERS: { key: string; label: string; match: (state: string) => boolean }[] = [
+  { key: "all", label: "All", match: () => true },
+  { key: "open", label: "Open", match: (st) => ACTIVE(st) },
+  { key: "approved", label: "Approved", match: (st) => st === "approved" },
+  { key: "rejected", label: "Rejected", match: (st) => st === "rejected" },
+];
+
 function DisputesView(s: Shared) {
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("all");
+  const active = QUEUE_FILTERS.find((f) => f.key === filter) ?? QUEUE_FILTERS[0];
+  const q = query.trim().toLowerCase();
+
+  const rows = s.disputes.filter((d) => {
+    if (!active.match(d.state)) return false;
+    if (!q) return true;
+    const merchant = s.txnById.get(d.transactionId)?.merchant ?? "";
+    return `#${d.id} tx ${d.transactionId} ${merchant} ${d.state}`.toLowerCase().includes(q);
+  });
+
   return (
     <div className="cols cols--queue">
       <section className="card">
         <div className="card__title">Dispute queue</div>
+        <div className="toolbar">
+          <div className="searchfield">
+            <input
+              type="text"
+              placeholder="Search disputes…"
+              aria-label="Search disputes"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="chips" style={{ marginBottom: 12 }}>
+          {QUEUE_FILTERS.map((f) => (
+            <button key={f.key} className={`chip ${filter === f.key ? "chip--on" : ""}`} onClick={() => setFilter(f.key)}>
+              {f.label}
+            </button>
+          ))}
+        </div>
         {s.disputes.length === 0 && <div className="empty">No disputes yet — open one from Transactions.</div>}
+        {s.disputes.length > 0 && rows.length === 0 && <div className="empty">No disputes match this filter.</div>}
         <div className="table">
-          {s.disputes.map((d) => (
+          {rows.map((d) => (
             <div className={`trow trow--click ${s.selected === d.id ? "trow--active" : ""}`} key={d.id}>
               <div className="trow__merch">
                 <div className="trow__name">
@@ -510,6 +548,12 @@ function CaseWorkspace({ s, dispute }: { s: Shared; dispute: Dispute }) {
         <span>State</span>
         <b><span className={badgeClass(dispute.state)}>{nice(dispute.state)}</span></b>
       </div>
+      {tx && (
+        <div className="kv">
+          <span>Advisory risk</span>
+          <b><RiskChip amountMinor={tx.amountMinor} /></b>
+        </div>
+      )}
       <div className="kv"><span>Version</span><b>{dispute.version}</b></div>
 
       <div className="btnrow">
