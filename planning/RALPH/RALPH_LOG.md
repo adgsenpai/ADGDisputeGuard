@@ -42,6 +42,7 @@ commit. Newest at the bottom.
 | 17 | Console core GUI test | `run-regression.sh` green; lists txns, opens dispute, idempotent replay, audit shows created | `073b7aa` |
 | 18 | Console lifecycle + evidence + audit GUI test | `run-regression.sh` green; role gating, evidence upload, full analyst path to approved, stale-version 409 | `26ed371` |
 | 19 | Console investigation GUI test | `run-regression.sh` green; runs bounded investigation, asserts tool-call budget <= 3 and advisory disclaimer | `dfeb181` |
+| 20 | Showcase video + per-flow GIFs | `run-regression.sh` green; `record-showcase.mjs` produced showcase.mp4 (26s, 1.2 MB) + showcase.gif (3 MB) + 3 per-flow GIFs | `pending` |
 
 ## Completion
 
