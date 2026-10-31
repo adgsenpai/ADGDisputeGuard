@@ -34,7 +34,7 @@
     { "id": "showcase-video", "status": "done", "commit": "5c2b64b" },
     { "id": "readme-showcase-docs", "status": "done", "commit": "1d44883" },
     { "id": "saas-design-sa-data", "status": "done", "commit": "14255b5" },
-    { "id": "saas-login-identity", "status": "done", "commit": "pending" },
+    { "id": "saas-login-identity", "status": "done", "commit": "640a801" },
     { "id": "saas-shell-nav", "status": "todo", "commit": null },
     { "id": "saas-dashboard", "status": "todo", "commit": null },
     { "id": "saas-transactions-tab", "status": "todo", "commit": null },
