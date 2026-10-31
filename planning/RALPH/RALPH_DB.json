@@ -30,7 +30,7 @@
     { "id": "gui-console-lifecycle", "status": "done", "commit": "26ed371" },
     { "id": "gui-console-investigate", "status": "done", "commit": "dfeb181" },
     { "id": "showcase-video", "status": "done", "commit": "5c2b64b" },
-    { "id": "readme-showcase-docs", "status": "done", "commit": "pending" }
+    { "id": "readme-showcase-docs", "status": "done", "commit": "1d44883" }
   ],
   "iterations": []
 }
