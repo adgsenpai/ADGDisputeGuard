@@ -49,7 +49,7 @@
     { "id": "bank-i18n", "status": "done", "commit": "4ae411e" },
     { "id": "bank-polish-theme-palette", "status": "done", "commit": "a4f9277" },
     { "id": "bank-session-auth", "status": "done", "commit": "cc54a1d" },
-    { "id": "bank-showcase-docs", "status": "done", "commit": "pending" }
+    { "id": "bank-showcase-docs", "status": "done", "commit": "8d36340" }
   ],
   "iterations": []
 }
