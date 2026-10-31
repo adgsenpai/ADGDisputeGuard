@@ -59,7 +59,7 @@ report, 25 TS, and 5 Playwright GUI tests; showcase video recorded and embedded.
 | 26 | Transactions tab | `run-regression.sh` green; search + category chips + advisory risk badge per row, open dispute from filtered row; transactions e2e | `974ca5c` |
 | 27 | Disputes queue + case workspace | `run-regression.sh` green; queue search + state filters, case workspace advisory-risk indicator; disputes-queue e2e | `9cddee5` |
 | 28 | Investigations + Evidence + Audit + Settings tabs | `run-regression.sh` green; server evidence + investigation registers (`/api/evidence`, `/api/investigations`), aggregate tabs + settings; unit + aux-tabs e2e | `70e85c5` |
-| 29 | Showcase refresh + docs | `run-regression.sh` green (50 Rust + 50/50, 27 TS, 9 GUI); showcase re-recorded against SaaS UI, README + testing docs refreshed | `pending` |
+| 29 | Showcase refresh + docs | `run-regression.sh` green (50 Rust + 50/50, 27 TS, 9 GUI); showcase re-recorded against SaaS UI, README + testing docs refreshed | `b1d6017` |
 
 **Phase 4 result:** modern SaaS console shipped — passwordless persona login
 with RBAC, generated African-style avatars, dashboard with charts, tabbed shell,
