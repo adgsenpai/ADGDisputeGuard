@@ -609,6 +609,22 @@ function ReasonCodePanel({ meta, state, amountMinor }: { meta: { openedAt: numbe
   );
 }
 
+async function downloadReport(id: number, identity: Identity) {
+  const res = await fetch(`/api/disputes/${id}/report`, {
+    headers: { "x-user-id": String(identity.userId), "x-user-role": identity.role },
+  });
+  if (!res.ok) return;
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `disputeguard-case-${id}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 function CaseWorkspace({ s, dispute }: { s: Shared; dispute: Dispute }) {
   const tx = s.txnById.get(dispute.transactionId);
   return (
@@ -651,6 +667,7 @@ function CaseWorkspace({ s, dispute }: { s: Shared; dispute: Dispute }) {
       <div className="btnrow" style={{ marginTop: 16 }}>
         <button className="btn" disabled={s.busy} onClick={s.submitEvidence}>Upload sample evidence</button>
         <button className="btn" disabled={s.busy} onClick={s.runInvestigation}>Run bounded investigation</button>
+        <button className="btn btn--ghost" onClick={() => downloadReport(dispute.id, s.identity)}>Download case report</button>
       </div>
 
       {s.investigation && (
