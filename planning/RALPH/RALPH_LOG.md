@@ -58,7 +58,7 @@ report, 25 TS, and 5 Playwright GUI tests; showcase video recorded and embedded.
 | 25 | Dashboard | `run-regression.sh` green; KPI tiles + avg advisory risk + 3 accessible charts (state, category, risk) from shared risk helper; dashboard e2e | `7f0864b` |
 | 26 | Transactions tab | `run-regression.sh` green; search + category chips + advisory risk badge per row, open dispute from filtered row; transactions e2e | `974ca5c` |
 | 27 | Disputes queue + case workspace | `run-regression.sh` green; queue search + state filters, case workspace advisory-risk indicator; disputes-queue e2e | `9cddee5` |
-| 28 | Investigations + Evidence + Audit + Settings tabs | `run-regression.sh` green; server evidence + investigation registers (`/api/evidence`, `/api/investigations`), aggregate tabs + settings; unit + aux-tabs e2e | `pending` |
+| 28 | Investigations + Evidence + Audit + Settings tabs | `run-regression.sh` green; server evidence + investigation registers (`/api/evidence`, `/api/investigations`), aggregate tabs + settings; unit + aux-tabs e2e | `70e85c5` |
 
 ## Completion
 
