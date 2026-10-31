@@ -54,6 +54,7 @@ report, 25 TS, and 5 Playwright GUI tests; showcase video recorded and embedded.
 |---|------|--------------|--------|
 | 22 | Design system + SA data + personas | `run-regression.sh` green; personas + generated avatars + theme tokens + SA seed data across 5 customers; unit + e2e updated | `14255b5` |
 | 23 | Passwordless login + identity | `run-regression.sh` green; persona login screen + RBAC identity in localStorage, sign-out, console gated; e2e sign-in helper | `640a801` |
+| 24 | App shell + navigation | `run-regression.sh` green; sidebar+topbar shell, 7 tabs, dashboard/transactions/disputes workspace/audit/settings, `/api/audit`; e2e navigate tabs | `pending` |
 
 ## Completion
 

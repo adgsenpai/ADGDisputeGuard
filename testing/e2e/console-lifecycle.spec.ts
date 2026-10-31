@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { signIn, switchPersona, PERSONA } from "./helpers";
+import { signIn, switchPersona, goTo, PERSONA } from "./helpers";
 
 /**
  * Console lifecycle GUI flow: role-gated transitions, evidence upload, and the
@@ -22,9 +22,11 @@ test.describe("console — lifecycle, evidence and audit", () => {
 
     // Sign in as the customer and open a dispute on the Checkers Sixty60 tx (43).
     await signIn(page, PERSONA.customer);
-    const corner = page.locator(".row", { hasText: "Checkers Sixty60" });
-    await corner.getByRole("button", { name: "Open dispute" }).click();
+    await goTo(page, "transactions");
+    await page.locator(".trow", { hasText: "Checkers Sixty60" }).getByRole("button", { name: "Open dispute" }).click();
     await expect(page.locator(".toast--ok")).toBeVisible();
+
+    await goTo(page, "disputes");
     await expect(stateBadge(page)).toHaveText("submitted");
 
     // Role gating in the UI: the customer may only submit evidence.
@@ -37,7 +39,8 @@ test.describe("console — lifecycle, evidence and audit", () => {
 
     // Sign out and sign in as the analyst — the staff transition controls appear.
     await switchPersona(page, PERSONA.analyst);
-    await page.locator('.row:has-text("(tx 43)")').getByRole("button", { name: "Inspect" }).first().click();
+    await goTo(page, "disputes");
+    await page.locator('.trow:has-text("(tx 43)")').getByRole("button", { name: "Inspect" }).first().click();
     await expect(page.getByRole("button", { name: "begin review" })).toBeVisible();
     await expect(page.getByRole("button", { name: "approve", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "evidence submitted" })).toHaveCount(0);
@@ -58,16 +61,17 @@ test.describe("console — lifecycle, evidence and audit", () => {
 
     // The audit trail recorded the transitions.
     await expect(page.locator(".trail li")).not.toHaveCount(auditCountBefore);
-    const trail = page.locator(".trail");
+    const trail = page.locator(".trail").first();
     await expect(trail).toContainText(/begin_review/);
     await expect(trail).toContainText(/approve/);
 
     expect(pageErrors, pageErrors.join("\n")).toEqual([]);
   });
 
-  test("the server rejects a stale (wrong-version) transition", async ({ page, request }) => {
-    // Open a dispute on City Shuttle via the API, then attempt a transition
-    // with a stale expectedVersion — the optimistic-concurrency guard rejects it.
+  test("the server rejects a stale (wrong-version) transition", async ({ request }) => {
+    // Open a dispute on the Bolt transaction via the API, then attempt a
+    // transition with a stale expectedVersion — the optimistic-concurrency
+    // guard rejects it.
     const headers = { "content-type": "application/json", "x-user-id": "1", "x-user-role": "customer" };
     const create = await request.post("/api/disputes", {
       headers,

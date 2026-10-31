@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { signIn, PERSONA } from "./helpers";
+import { signIn, goTo, PERSONA } from "./helpers";
 
 /**
  * Console investigation GUI flow: run the bounded, Ollama-backed investigation
@@ -15,10 +15,11 @@ test.describe("console — bounded investigation", () => {
 
     await signIn(page, PERSONA.customer);
 
-    // Open a dispute on the Mr Price transaction and inspect it.
-    const studio = page.locator(".row", { hasText: "Mr Price" });
-    await studio.getByRole("button", { name: "Open dispute" }).click();
+    // Open a dispute on the Mr Price transaction, then open it in the workspace.
+    await goTo(page, "transactions");
+    await page.locator(".trow", { hasText: "Mr Price" }).getByRole("button", { name: "Open dispute" }).click();
     await expect(page.locator(".toast--ok")).toBeVisible();
+    await goTo(page, "disputes");
 
     // Run the bounded investigation.
     await page.getByRole("button", { name: "Run bounded investigation" }).click();

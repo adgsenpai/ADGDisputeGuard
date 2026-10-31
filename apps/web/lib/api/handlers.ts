@@ -33,6 +33,22 @@ export function listTransactions(transactions: { id: number; ownerId: number }[]
   return { status: 200, body: { transactions: visible } };
 }
 
+// The audit events the user may see: staff see everything; a customer sees
+// only events for disputes raised on their own transactions.
+export function listAudit(
+  store: DisputeStore,
+  user: User,
+  transactions: { id: number; ownerId: number }[],
+): ApiResult {
+  const all = store.allEvents();
+  if (user.role !== "customer") return { status: 200, body: { events: all } };
+  const ownedTx = new Set(transactions.filter((t) => t.ownerId === user.id).map((t) => t.id));
+  const myDisputeIds = new Set(
+    store.allDisputes().filter((d) => ownedTx.has(d.transactionId)).map((d) => d.id),
+  );
+  return { status: 200, body: { events: all.filter((e) => myDisputeIds.has(e.disputeId)) } };
+}
+
 export function createDispute(
   store: DisputeStore,
   user: User,

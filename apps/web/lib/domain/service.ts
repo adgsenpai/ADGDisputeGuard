@@ -76,6 +76,10 @@ export class DisputeStore {
     return this.auditLog.filter((e) => e.disputeId === disputeId);
   }
 
+  allEvents(): AuditEvent[] {
+    return [...this.auditLog];
+  }
+
   private append(disputeId: number, actorId: number, detail: AuditKind): void {
     this.auditLog.push({ seq: this.nextSeq++, disputeId, actorId, detail });
   }

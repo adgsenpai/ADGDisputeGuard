@@ -13,12 +13,17 @@ export const PERSONA = {
 export async function signIn(page: Page, personaName: string) {
   await page.goto("/console", { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: `Sign in as ${personaName}` }).click();
-  await expect(page.getByText("DisputeGuard Console")).toBeVisible();
+  await expect(page.getByTestId("console-shell")).toBeVisible();
 }
 
 // Sign out and sign back in as a different persona (switches RBAC role).
 export async function switchPersona(page: Page, personaName: string) {
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.getByRole("button", { name: "Sign out" }).first().click();
   await page.getByRole("button", { name: `Sign in as ${personaName}` }).click();
-  await expect(page.getByText("DisputeGuard Console")).toBeVisible();
+  await expect(page.getByTestId("console-shell")).toBeVisible();
+}
+
+// Navigate to a tab via the sidebar nav.
+export async function goTo(page: Page, nav: string) {
+  await page.locator(`[data-nav="${nav}"]`).click();
 }

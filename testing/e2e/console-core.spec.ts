@@ -1,10 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { signIn, PERSONA } from "./helpers";
+import { signIn, goTo, PERSONA } from "./helpers";
 
 /**
  * Console core GUI flow: the acting user lists their transactions, opens a
  * dispute (ownership + idempotent creation), and sees it appear in the dispute
- * list with its case detail. Assertions are relative to the starting state so
+ * queue with its case detail. Assertions are relative to the starting state so
  * the test is robust whether or not the shared in-memory store already holds
  * disputes from a previous run.
  */
@@ -15,40 +15,34 @@ test.describe("console — transactions and dispute creation", () => {
 
     // Sign in (passwordless) as the customer persona.
     await signIn(page, PERSONA.customer);
-    await expect(page.locator(".rolepill--customer")).toBeVisible();
+    await expect(page.locator(".rolepill--customer").first()).toBeVisible();
 
-    // The customer's seeded transactions are listed.
+    // Go to the Transactions tab — the customer's seeded transactions are listed.
+    await goTo(page, "transactions");
     const openButtons = page.getByRole("button", { name: "Open dispute" });
     await expect(openButtons.first()).toBeVisible();
-    const txnCount = await openButtons.count();
-    expect(txnCount).toBeGreaterThan(0);
-
-    const disputeRows = page.locator('.row:has-text("Dispute #")');
-    const before = await disputeRows.count();
+    expect(await openButtons.count()).toBeGreaterThan(0);
 
     // Open a dispute on the first transaction.
     await openButtons.first().click();
     await expect(page.locator(".toast--ok")).toBeVisible();
 
-    // The case detail panel now shows a state for the opened dispute.
-    await expect(page.getByText("Case detail")).toBeVisible();
-    await expect(page.locator(".kv", { hasText: "State" })).toBeVisible();
-
-    // At least one dispute row exists now (created this run, or already present).
+    // The dispute appears in the queue and the case detail shows its state.
+    await goTo(page, "disputes");
+    const disputeRows = page.locator('.trow:has-text("Dispute #")');
+    await expect(disputeRows.first()).toBeVisible();
     const afterOpen = await disputeRows.count();
-    expect(afterOpen).toBeGreaterThanOrEqual(Math.max(before, 1));
+    await expect(page.getByText("Case detail")).toBeVisible();
+    await expect(page.locator('.kv:has-text("State")').first()).toBeVisible();
+    await expect(page.locator(".trail li").first()).toContainText(/created/i);
 
     // Idempotency: opening the SAME transaction again must not create a second
-    // dispute — the count stays the same and the server reports a replay.
+    // dispute — the queue count stays the same and the server reports a replay.
+    await goTo(page, "transactions");
     await openButtons.first().click();
     await expect(page.locator(".toast")).toContainText(/idempotent|opened/i);
-    const afterReplay = await disputeRows.count();
-    expect(afterReplay).toBe(afterOpen);
-
-    // Inspect the dispute and confirm the audit trail records its creation.
-    await page.locator('.row:has-text("Dispute #") button', { hasText: "Inspect" }).first().click();
-    await expect(page.getByText("Audit trail")).toBeVisible();
-    await expect(page.locator(".trail li").first()).toContainText(/created/i);
+    await goTo(page, "disputes");
+    expect(await disputeRows.count()).toBe(afterOpen);
 
     expect(pageErrors, pageErrors.join("\n")).toEqual([]);
   });

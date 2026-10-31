@@ -9,6 +9,7 @@ import {
   transitionDispute,
   submitEvidence,
   listTransactions,
+  listAudit,
   hashRequest,
 } from "../lib/api/handlers.ts";
 
@@ -90,6 +91,23 @@ test("getDispute returns audit trail; unknown is 404", () => {
   assert.equal(got.body.events[0].detail.kind, "dispute-created");
   assert.equal(getDispute(store, 99999).status, 404);
   assert.equal(listDisputes(store).body.disputes.length, 1);
+});
+
+test("listAudit scopes events by role", () => {
+  const store = createSeededStore();
+  const txs = SEED_TRANSACTIONS.map((t) => ({ id: t.id, ownerId: t.ownerId }));
+  // Customer 1 (owns tx 42) and customer 2 (owns tx 70) each open a dispute.
+  createDispute(store, CUSTOMER, { transactionId: 42, idempotencyKey: "a" });
+  createDispute(store, STRANGER, { transactionId: 70, idempotencyKey: "b" });
+
+  // Staff see every event.
+  const staff = listAudit(store, ANALYST, txs).body.events;
+  assert.equal(staff.length, 2);
+
+  // Each customer sees only their own dispute's events.
+  const mine = listAudit(store, CUSTOMER, txs).body.events;
+  assert.equal(mine.length, 1);
+  assert.equal(mine[0].detail.kind, "dispute-created");
 });
 
 test("submitEvidence validates uploads", () => {
