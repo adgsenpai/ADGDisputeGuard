@@ -17,6 +17,7 @@ import { spawn, execSync } from "node:child_process";
 import { setTimeout as sleep } from "node:timers/promises";
 import { mkdir, rm } from "node:fs/promises";
 import path from "node:path";
+import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -59,10 +60,20 @@ async function waitForServer(url, timeoutMs = 60_000) {
   }
   throw new Error(`server at ${url} not ready`);
 }
-function api(p, uid, role, body) {
+let cookie = "";
+async function loginAs(uid) {
+  const res = await fetch(BASE + "/api/auth", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ action: "demo", userId: uid }),
+  });
+  const sc = res.headers.get("set-cookie");
+  if (sc) cookie = sc.split(";")[0];
+}
+function api(p, body) {
   return fetch(BASE + p, {
     method: body === undefined ? "GET" : "POST",
-    headers: { "content-type": "application/json", "x-user-id": uid, "x-user-role": role },
+    headers: { "content-type": "application/json", ...(cookie ? { cookie } : {}) },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 }
@@ -124,18 +135,24 @@ async function nav(page, key) {
 }
 
 async function seed() {
-  // Portfolio data so the dashboard and registers are populated.
-  const d1 = await (await api("/api/disputes", "1", "customer", { transactionId: 42, reason: "x", idempotencyKey: "sc1" })).json();
+  // Portfolio data so the dashboard and registers are populated. Each actor
+  // signs in (cookie session) before its calls.
+  await loginAs(1);
+  const d1 = await (await api("/api/disputes", { transactionId: 42, reason: "I don't recognise this payment.", idempotencyKey: "sc1" })).json();
+  await loginAs(9);
   let v = d1.dispute.version;
   for (const ev of ["begin_review", "begin_investigation", "approve"]) {
-    v = (await (await api(`/api/disputes/${d1.dispute.id}/transition`, "9", "analyst", { event: ev, expectedVersion: v })).json()).dispute.version;
+    v = (await (await api(`/api/disputes/${d1.dispute.id}/transition`, { event: ev, expectedVersion: v })).json()).dispute.version;
   }
-  await api("/api/disputes", "2", "customer", { transactionId: 70, reason: "x", idempotencyKey: "sc2" });
-  const d3 = await (await api("/api/disputes", "3", "customer", { transactionId: 82, reason: "x", idempotencyKey: "sc3" })).json();
-  await api(`/api/disputes/${d3.dispute.id}/transition`, "9", "analyst", { event: "begin_review", expectedVersion: d3.dispute.version });
-  const d4 = await (await api("/api/disputes", "4", "customer", { transactionId: 90, reason: "x", idempotencyKey: "sc4" })).json();
-  await api(`/api/disputes/${d4.dispute.id}/evidence`, "4", "customer", { upload: { name: "statement.pdf", declaredType: "application/pdf", detectedType: "application/pdf", sizeBytes: 20480 }, scan: "clean" });
-  await api(`/api/disputes/${d4.dispute.id}/investigate`, "4", "customer");
+  await loginAs(2);
+  await api("/api/disputes", { transactionId: 70, reason: "I was billed after cancelling.", idempotencyKey: "sc2" });
+  await loginAs(3);
+  const d3 = await (await api("/api/disputes", { transactionId: 82, reason: "The order hasn't arrived.", idempotencyKey: "sc3" })).json();
+  await loginAs(9);
+  await api(`/api/disputes/${d3.dispute.id}/transition`, { event: "begin_review", expectedVersion: d3.dispute.version });
+  await loginAs(4);
+  const d4 = await (await api("/api/disputes", { transactionId: 90, reason: "Charged for an item I returned.", idempotencyKey: "sc4" })).json();
+  await api(`/api/disputes/${d4.dispute.id}/investigate`, {});
 }
 
 async function main() {
@@ -151,7 +168,7 @@ async function main() {
   console.log(`[showcase] starting app on ${BASE}`);
   const server = spawn("npm", ["run", "start", "--", "--port", PORT], {
     cwd: WEB,
-    env: { ...process.env, ...UNREACHABLE_OLLAMA },
+    env: { ...process.env, ...UNREACHABLE_OLLAMA, APP_URL: BASE, DATA_DIR: path.join(tmpdir(), `dg-showcase-${Date.now()}`), SHOWCASE_DEMO_LOGIN: "true" },
     stdio: "ignore",
     detached: true,
   });
@@ -193,6 +210,7 @@ async function main() {
       await caption(page, "The <b>dispute queue</b> and case workspace", 1200);
       await page.locator('.trow:has-text("(tx 43)")').getByRole("button", { name: "Inspect" }).click();
       await page.waitForTimeout(900);
+      await caption(page, "Visa/Mastercard <b>reason code</b>, required evidence &amp; <b>SLA</b> countdown", 1600);
       await caption(page, "Drive the <b>authorised lifecycle</b>, server-checked", 900);
       await page.getByRole("button", { name: "begin review" }).click();
       await page.waitForTimeout(800);
@@ -206,7 +224,25 @@ async function main() {
       await page.waitForTimeout(1000);
 
       await nav(page, "audit");
-      await caption(page, "Every change recorded in the <b>audit log</b>", 1600);
+      await caption(page, "<b>Tamper-evident</b> audit log — SHA-256 hash chain, verified", 1900);
+
+      await caption(page, "Light &amp; dark <b>themes</b>", 700);
+      await page.getByRole("button", { name: "Switch to light theme" }).click();
+      await page.waitForTimeout(1100);
+      await page.getByRole("button", { name: "Switch to dark theme" }).click();
+      await page.waitForTimeout(500);
+
+      await caption(page, "<b>⌘K command palette</b> — jump anywhere", 700);
+      await page.getByRole("button", { name: "Open command palette" }).click();
+      await page.getByLabel("Command palette search").fill("disputes");
+      await page.waitForTimeout(1100);
+      await page.keyboard.press("Escape");
+
+      await caption(page, "<b>Multi-language</b> — English · isiZulu · Afrikaans", 800);
+      await page.getByLabel("Language").selectOption("zu");
+      await page.waitForTimeout(1300);
+      await page.getByLabel("Language").selectOption("en");
+      await page.waitForTimeout(400);
 
       await nav(page, "dashboard");
       await caption(page, "<b>Secure · Explainable · Auditable</b> — tested end to end", 2000);

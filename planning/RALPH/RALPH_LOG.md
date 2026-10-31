@@ -75,6 +75,7 @@ South African data; 27 TS + 9 Playwright GUI tests green, showcase re-recorded.
 | 33 | Multi-language console (EN/isiZulu/Afrikaans) | `run-regression.sh` green (39 TS, 13 GUI); i18n layer + language switcher, translated nav/views/KPIs/login; completeness + e2e tests | `4ae411e` |
 | 34 | Real authentication + evidence attachments (session auth, item 6) | `run-regression.sh` green (44 TS, 13 GUI); SQLite sessions/accounts, cookie auth + origin check, server-verified roles, file-upload evidence; e2e migrated to cookie auth | `cc54a1d` |
 | 35 | Polish: theme + command palette | `run-regression.sh` green (44 TS, 14 GUI); light/dark theme toggle persisted, ⌘K command palette to jump between tabs/actions | `a4f9277` |
+| 36 | Showcase refresh + docs | `run-regression.sh` green (44 TS, 14 GUI); showcase re-recorded featuring reason codes, integrity, theme, palette, i18n; README + testing docs refreshed | `pending` |
 
 ## Completion
 

@@ -5,7 +5,7 @@
 </p>
 
 ![Project status](https://img.shields.io/badge/status-engine%20%2B%20app%20%2B%20infra-blue)
-![Tests](https://img.shields.io/badge/tests-50%20Rust%20%7C%2027%20TS%20%7C%209%20GUI-brightgreen)
+![Tests](https://img.shields.io/badge/tests-50%20Rust%20%7C%2044%20TS%20%7C%2014%20GUI-brightgreen)
 ![AI](https://img.shields.io/badge/investigation-Ollama%20(bounded)-6f42c1)
 ![Documentation](https://img.shields.io/badge/docs-LaTeX%20%7C%20PDF-orange)
 ![Build](https://img.shields.io/badge/PDF%20build-Docker-2496ED?logo=docker&logoColor=white)
@@ -31,11 +31,13 @@ bounded investigation) are implemented and tested end to end.
 
 ## Showcase
 
-A narrated walkthrough of the SaaS console: passwordless persona sign-in (your
-RBAC role comes from who you sign in as), the portfolio dashboard, the
-transactions tab, the dispute case workspace (role-gated lifecycle, evidence,
-bounded AI investigation), and the audit log. Recorded automatically by
-[`testing/record-showcase.mjs`](testing/record-showcase.mjs).
+A narrated walkthrough of the SaaS console: sign-in and the portfolio
+dashboard, the transactions tab, the dispute case workspace with its
+**Visa/Mastercard chargeback reason code, required-evidence checklist and SLA
+countdown**, the bounded AI investigation, the **tamper-evident (SHA-256
+hash-chained) audit log**, the **light/dark theme**, the **⌘K command palette**,
+and the **multi-language** switch (English / isiZulu / Afrikaans). Recorded
+automatically by [`testing/record-showcase.mjs`](testing/record-showcase.mjs).
 
 <p align="center">
   <img src="testing/media/gifs/showcase.gif" alt="DisputeGuard SaaS console walkthrough" width="900">
@@ -60,9 +62,10 @@ bounded AI investigation), and the audit log. Recorded automatically by
 | Reference engine     | Rust crate implementing the spec — 50 unit tests, LaTeX report 50/50  |
 | Application          | Next.js API + a SaaS `/console` (login, dashboard, tabs) over a TS core |
 | AI investigation     | Bounded loop backed by local Ollama, guardrails enforced in app code  |
-| GUI / regression     | Playwright GUI tests + one regression command — 9 e2e, video recorded |
+| Bank-grade features  | Chargeback reason codes + SLAs, tamper-evident audit log, case-report PDFs, i18n |
+| GUI / regression     | Playwright GUI tests + one regression command — 14 e2e, video recorded |
 | Infrastructure       | `docker-compose` with the web app + Ollama                            |
-| Authentication       | Header-based demo identity; real auth remains planned                 |
+| Authentication       | Passwordless demo personas + registered accounts with server-verified roles |
 | PDF documentation    | Buildable locally with Docker                                         |
 
 ## Documentation

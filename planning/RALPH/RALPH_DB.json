@@ -7,7 +7,7 @@
     "phase2_app": "done",
     "phase3_qa": "done",
     "phase4_saas": "done",
-    "phase5_bankgrade": "in_progress"
+    "phase5_bankgrade": "done"
   },
   "phase5_completion_promise": "DISPUTEGUARD BANKGRADE COMPLETE",
   "phase3_completion_promise": "DISPUTEGUARD QA COMPLETE",
@@ -49,7 +49,7 @@
     { "id": "bank-i18n", "status": "done", "commit": "4ae411e" },
     { "id": "bank-polish-theme-palette", "status": "done", "commit": "a4f9277" },
     { "id": "bank-session-auth", "status": "done", "commit": "cc54a1d" },
-    { "id": "bank-showcase-docs", "status": "todo", "commit": null }
+    { "id": "bank-showcase-docs", "status": "done", "commit": "pending" }
   ],
   "iterations": []
 }

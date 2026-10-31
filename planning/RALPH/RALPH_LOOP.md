@@ -123,7 +123,7 @@ Per-item protocol for this phase:
 - [x] **Multi-language console (EN/isiZulu/Afrikaans)**: an i18n layer (`lib/i18n.ts`) with dictionaries for the three languages, a language switcher in the shell, console strings translated (persisted choice). Unit test for dictionary completeness; e2e switches language and asserts a translated string.
 - [x] **Polish: theme + command palette**: a light/dark theme toggle (tokens already defined; add a light palette) persisted per viewer, and a ⌘K/Ctrl-K command palette to jump between tabs and cases. e2e toggles theme and opens the palette.
 - [x] **Real session tokens**: a `POST /api/session` that mints a signed (HMAC) session token for the chosen persona server-side, a `DELETE /api/session` to end it, and request auth that **verifies the token** and derives identity from it — the API no longer trusts `x-user-role` from the client. Update the login to obtain a token, the client to send it, and all unit/e2e/API callers. Unit tests for signing/verification and tamper/expiry rejection.
-- [ ] **Showcase refresh + docs**: re-record the showcase to feature the bank-grade additions, refresh README/`testing/README.md`; confirm `testing/run-regression.sh` is fully green.
+- [x] **Showcase refresh + docs**: re-record the showcase to feature the bank-grade additions, refresh README/`testing/README.md`; confirm `testing/run-regression.sh` is fully green.
 
 ## State
 

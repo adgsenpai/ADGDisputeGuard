@@ -43,7 +43,7 @@ SKIP_ENGINE=1 bash testing/run-regression.sh   # unit + GUI only (no Rust/LaTeX)
 | ------------ | ----------------------------------------------------- |
 | Rust engine  | `engine/run-tests.sh` — 50 unit tests, report 50/50   |
 | App unit     | `apps/web` `npm test` — `node:test` cases             |
-| GUI / e2e    | Playwright — landing + SaaS console flows, 9 tests     |
+| GUI / e2e    | Playwright — landing + SaaS console flows, 14 tests     |
 
 ## GUI tests (Playwright)
 
@@ -81,6 +81,9 @@ Coverage:
 | `console-lifecycle.spec.ts`   | Role gating, evidence upload, analyst path to approval, stale→409   |
 | `console-investigate.spec.ts` | Bounded investigation renders; tool-call budget ≤ 3; advisory note  |
 | `console-tabs.spec.ts`        | Investigations, Evidence, Audit and Settings tabs render           |
+| `console-reason.spec.ts`      | Chargeback reason code, SLA countdown and evidence checklist       |
+| `console-report.spec.ts`      | Per-case PDF download (API + UI action)                            |
+| `console-polish.spec.ts`      | Light/dark theme toggle and the ⌘K command palette                 |
 
 All console specs sign in through the passwordless persona login (`helpers.ts`).
 
