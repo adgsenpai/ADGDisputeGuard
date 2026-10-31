@@ -56,7 +56,7 @@ report, 25 TS, and 5 Playwright GUI tests; showcase video recorded and embedded.
 | 23 | Passwordless login + identity | `run-regression.sh` green; persona login screen + RBAC identity in localStorage, sign-out, console gated; e2e sign-in helper | `640a801` |
 | 24 | App shell + navigation | `run-regression.sh` green; sidebar+topbar shell, 7 tabs, dashboard/transactions/disputes workspace/audit/settings, `/api/audit`; e2e navigate tabs | `618a605` |
 | 25 | Dashboard | `run-regression.sh` green; KPI tiles + avg advisory risk + 3 accessible charts (state, category, risk) from shared risk helper; dashboard e2e | `7f0864b` |
-| 26 | Transactions tab | `run-regression.sh` green; search + category chips + advisory risk badge per row, open dispute from filtered row; transactions e2e | `pending` |
+| 26 | Transactions tab | `run-regression.sh` green; search + category chips + advisory risk badge per row, open dispute from filtered row; transactions e2e | `974ca5c` |
 
 ## Completion
 
