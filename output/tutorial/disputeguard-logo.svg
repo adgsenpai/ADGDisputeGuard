@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+<title>ADGSTUDIOS DisputeGuard Logo</title>
+<desc>Blue protective shield with document/card and orbital ring.</desc>
+<defs>
+  <linearGradient id="shieldOuter" x1="160" y1="150" x2="850" y2="870" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#38f5ff"/>
+    <stop offset=".25" stop-color="#079cff"/>
+    <stop offset=".65" stop-color="#0758ed"/>
+    <stop offset="1" stop-color="#0534b7"/>
+  </linearGradient>
+  <linearGradient id="shieldInner" x1="300" y1="220" x2="720" y2="820" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#08286d"/>
+    <stop offset=".55" stop-color="#041b50"/>
+    <stop offset="1" stop-color="#020d2c"/>
+  </linearGradient>
+  <linearGradient id="fold" x1="350" y1="320" x2="710" y2="650" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#ffffff"/>
+    <stop offset=".55" stop-color="#eef5ff"/>
+    <stop offset="1" stop-color="#bdd4f2"/>
+  </linearGradient>
+  <linearGradient id="card" x1="330" y1="480" x2="650" y2="700" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#ffffff"/>
+    <stop offset=".55" stop-color="#eaf3ff"/>
+    <stop offset="1" stop-color="#b9d2f2"/>
+  </linearGradient>
+  <linearGradient id="orbit" x1="100" y1="690" x2="920" y2="390" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#28ffff"/>
+    <stop offset=".45" stop-color="#00c8ff"/>
+    <stop offset=".75" stop-color="#1688ff"/>
+    <stop offset="1" stop-color="#4feaff"/>
+  </linearGradient>
+  <linearGradient id="bar" x1="350" y1="530" x2="620" y2="620" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#0b438d"/>
+    <stop offset="1" stop-color="#041c49"/>
+  </linearGradient>
+  <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+    <feGaussianBlur stdDeviation="8" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+    <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#001437" flood-opacity=".38"/>
+  </filter>
+</defs>
+
+<!-- shield glow -->
+<path d="M512 78 840 220v274c0 211-127 361-328 457C311 855 184 705 184 494V220Z"
+      fill="none" stroke="#00dfff" stroke-width="24" opacity=".22" filter="url(#glow)"/>
+
+<!-- outer shield -->
+<path d="M512 78 840 220v274c0 211-127 361-328 457C311 855 184 705 184 494V220Z"
+      fill="url(#shieldOuter)" filter="url(#shadow)"/>
+
+<!-- inner shield cut -->
+<path d="M512 164 760 271v221c0 158-91 277-248 360-157-83-248-202-248-360V271Z"
+      fill="url(#shieldInner)"/>
+
+<!-- upper/right facet -->
+<path d="M512 78 840 220v274l-80-2V271L512 164Z" fill="#087cff" opacity=".72"/>
+<path d="M184 220 512 78v86L264 271v221l-80 2Z" fill="#20dfff" opacity=".42"/>
+
+<!-- document/page -->
+<path d="M353 303h132c108 0 204 51 258 139 32 52 46 112 42 177l-94-9c3-43-6-81-26-113-36-58-101-92-180-92H353Z"
+      fill="url(#fold)" filter="url(#shadow)"/>
+<path d="M353 405h132c79 0 144 34 180 92 20 32 29 70 26 113l-71-7c1-27-5-50-17-69-23-37-65-58-118-58H353Z"
+      fill="#08265f"/>
+
+<!-- card -->
+<rect x="322" y="487" width="337" height="205" rx="34" fill="url(#card)" stroke="#fff" stroke-width="5" filter="url(#shadow)"/>
+<rect x="350" y="529" width="260" height="42" rx="21" fill="url(#bar)"/>
+<rect x="350" y="599" width="155" height="35" rx="17.5" fill="#6689b6"/>
+
+<!-- rear orbital segment -->
+<path d="M122 625C201 455 558 380 825 432c102 20 159 59 157 107-2 35-35 72-95 106"
+      fill="none" stroke="url(#orbit)" stroke-width="31" stroke-linecap="round" opacity=".9"/>
+
+<!-- front orbital segment -->
+<path d="M120 625c-19 39-5 74 42 101 107 61 388 44 606-38 88-33 153-72 188-111"
+      fill="none" stroke="url(#orbit)" stroke-width="34" stroke-linecap="round" filter="url(#glow)"/>
+
+<!-- subtle highlight -->
+<path d="M131 611c101 66 357 50 584-22 107-34 193-78 244-124"
+      fill="none" stroke="#8effff" stroke-width="4" stroke-linecap="round" opacity=".65"/>
+</svg>

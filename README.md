@@ -29,6 +29,34 @@ move real money — but the dispute flows (ownership, idempotent creation,
 authorised transitions, evidence validation, audit trail, advisory risk, and a
 bounded investigation) are implemented and tested end to end.
 
+## Video, slides and tutorial
+
+The **6 minute 56 second narrated walkthrough** follows a sample missing order
+through customer submission, evidence upload, analyst review and report export.
+It also demonstrates notifications, administrator monitoring and account access.
+
+[![Watch the full DisputeGuard walkthrough](output/tutorial/screenshots/02-dashboard.png)](output/tutorial/disputeguard-full-walkthrough.mp4)
+
+| Material | Download | Contents |
+| --- | --- | --- |
+| Full video | [Watch the 1080p MP4](output/tutorial/disputeguard-full-walkthrough.mp4) | Narration, 15 chapters and optional English subtitles |
+| Presentation slides | [Download the PowerPoint](output/tutorial/disputeguard-walkthrough-slides.pptx) | 15 slides with app screenshots, editable explanations and speaker notes |
+| Tutorial booklet | [Read the illustrated PDF](output/tutorial/disputeguard-tutorial.pdf) | 17 pages covering the workflow and how the AI works |
+| Claude Design assets | [Download the design pack](output/tutorial/claude-design-assets.zip) | 30 screenshots, logos, narration script, subtitles and a design brief |
+| Narration and chapters | [Read the walkthrough script](output/tutorial/narration-and-chapters.md) | Chapter timestamps and complete narration |
+| Subtitles | [Download the English SRT](output/tutorial/disputeguard-tutorial.srt) | Optional captions for the video |
+| Example case report | [Read the sample report](output/tutorial/sample-case-report.pdf) | Exported tutorial case with fictional evidence |
+
+**AI demonstrations:** the conversational assistant starts at **02:11**, and the
+bounded case investigation starts at **03:08**. Both recorded runs use real local
+Ollama responses. The materials explain scoped records, the application-enforced
+budget, fallback behaviour and human review, including verification of an amount
+the model misstated. Sample payments do not connect to a bank or move money.
+
+The [screenshot folder](output/tutorial/screenshots/) contains both viewport and
+full-page captures. Use the [Claude Design brief](output/tutorial/CLAUDE-DESIGN-BRIEF.md)
+with the asset pack when adapting the walkthrough.
+
 ## Showcase
 
 A narrated walkthrough of the SaaS console: sign-in and the portfolio
